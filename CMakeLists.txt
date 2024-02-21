@@ -25,3 +25,10 @@ add_executable(graph_matcher_node
   ${gmlaas_SOURCE_DIR}/graph_matcher.cpp
 )
 target_link_libraries(graph_matcher_node ${catkin_LIBRARIES})
+
+# fake_graph_builder_node
+add_executable(fake_graph_builder_node
+  ${gmlaas_SOURCE_DIR}/main_fake_graph_builder.cpp
+  ${gmlaas_SOURCE_DIR}/fake_graph_builder.cpp
+)
+target_link_libraries(fake_graph_builder_node ${catkin_LIBRARIES})
