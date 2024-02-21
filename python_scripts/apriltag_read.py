@@ -1,11 +1,7 @@
 #!/usr/bin/env python3
 
 import rospy
-<<<<<<< HEAD
-import Graph
-=======
 import python_scripts.graph_builder as graph_builder
->>>>>>> master
 from apriltag_ros.msg import AprilTagDetectionArray
 from std_msgs.msg import Float32MultiArray
 
@@ -22,11 +18,7 @@ connections = [[5, 8],
 def apriltag_callback(data):
     # Set to store existing node IDs
     existing_node_ids = []
-<<<<<<< HEAD
-    tree = Graph.Graph() 
-=======
     tree = graph_builder.Graph() 
->>>>>>> master
     # Set to store existing edges
     existing_edges = []  
 
@@ -38,11 +30,7 @@ def apriltag_callback(data):
 
         # Check if node already exists for the ID
         if id not in existing_node_ids:
-<<<<<<< HEAD
-            node = Graph.Node(id, x, y, z)
-=======
             node = graph_builder.Node(id, x, y, z)
->>>>>>> master
             tree.add_node(node)
             existing_node_ids.append(id)
         else:
@@ -63,11 +51,7 @@ def apriltag_callback(data):
         # Check if both nodes exist and edge does not already exist
         if (from_node_id, to_node_id) not in existing_edges and (to_node_id, from_node_id) not in existing_edges:
             if from_node_id in existing_node_ids and to_node_id in existing_node_ids:
-<<<<<<< HEAD
-                edge = Graph.Edge(from_node_id, to_node_id, "connection")
-=======
                 edge = graph_builder.Edge(from_node_id, to_node_id, "connection")
->>>>>>> master
                 tree.add_edge(edge)
                 edge.calculate_edge_length(tree)
                 existing_edges.append((from_node_id, to_node_id))
