@@ -67,15 +67,19 @@ class GraphMatcher:
         cols = data.layout.dim[1].size
         rospy.loginfo(f"Adjacency matrix {rows}x{cols} received.")
 
-
         adj_matrix_data = list(data.data)
         adj_matrix = self.buildMatrix(adj_matrix_data, rows, cols)
 
+        rospy.loginfo("Solving graph matching...")
         K, X = self.solvePygmMatching(adj_matrix, self.reference_adj_matrix)
 
+        rospy.loginfo("Computing relationships...")
         relationships_data = self.computeRelationships(X)
         relationships_msg = self.buildMessage(relationships_data)
+
+        rospy.loginfo("Publishing relationships...")
         self.m_isomorphism_pub.publish(relationships_msg)
+        rospy.loginfo(f"Published: {relationships_msg}")
 
 if __name__ == "__main__":
     matcher = GraphMatcher()
