@@ -1,28 +1,19 @@
-#ifndef GRAPH_MATCHER_HPP
-#define GRAPH_MATCHER_HPP
-
+#include "std_msgs/Float32MultiArray.h"
 #include <ros/ros.h>
-#//include <your_graph_msgs/Graph.h> 
+#include <vector>
 
 
-class GraphMatcher
-{
+class GraphMatcher {
 public:
-    GraphMatcher(ros::NodeHandle& m_node);
+    GraphMatcher(ros::NodeHandle& node);
     void init();
-    void callback();
-    void resizeAdjacencyMatrix();
+    void callback(const std_msgs::Float32MultiArray::ConstPtr& msg);
+    std::vector<std::vector<float>> rebuildMatrix(int rows, int cols, const std::vector<float>& data);
     void computeGraphMatcher();
     void visualizeGraphMatcher();
 
 private:
-    ros::NodeHandle& m_node;
+    ros::NodeHandle m_node;
     ros::Publisher m_pub;
     ros::Subscriber m_sub;
-    message_filters::Subscriber<sensor_msgs::Image> m_color_image_sub;
-    message_filters::Subscriber<sensor_msgs::Image> m_depth_image_sub;
-    message_filters::TimeSynchronizer<sensor_msgs::Image, sensor_msgs::Image> m_image_sync;
-
 };
-
-#endif // GRAPH_MATCHER_HPP

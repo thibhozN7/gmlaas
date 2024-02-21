@@ -19,25 +19,9 @@ include_directories(
   ${gmlaas_INCLUDE_DIR}
 )
 
-# graph_builder_node
-add_executable(graph_builder_node
-  ${gmlaas_SOURCE_DIR}/graph_builder.cpp
-  ${gmlaas_SOURCE_DIR}/graph_node.cpp
-  ${gmlaas_SOURCE_DIR}/graph_edge.cpp
-  ${gmlaas_SOURCE_DIR}/main_graph_builder.cpp
-)
-
 # graph_matcher_node
 add_executable(graph_matcher_node
   ${gmlaas_SOURCE_DIR}/main_graph_matcher.cpp
   ${gmlaas_SOURCE_DIR}/graph_matcher.cpp
 )
-
-# reading_tags_node
-add_executable(reading_tags_node
-  ${gmlaas_SOURCE_DIR}/main_tag_reader.cpp
-  ${gmlaas_SOURCE_DIR}/tag_reader.cpp
-)
-
-
-target_link_libraries(graph_builder_node ${catkin_LIBRARIES})
+target_link_libraries(graph_matcher_node ${catkin_LIBRARIES})
