@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 
 
 import visualization
-import computation
+import old.computation as computation
 
 from reference import reference_tree
 

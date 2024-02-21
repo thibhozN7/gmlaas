@@ -16,6 +16,9 @@ int main(int argc, char **argv) {
 
     // Create a node handle
     ros::NodeHandle n;
+    /**
+     * @brief Publisher for the "chatter" topic.
+     */
     ros::Publisher chatter_pub = n.advertise<std_msgs::Float32MultiArray>("chatter", 1000);
     ros::Rate loop_rate(1); // 1 Hz
 
