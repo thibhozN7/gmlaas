@@ -71,5 +71,5 @@ def listener():
     rospy.spin()
 
 if __name__ == '__main__':
-    adjacency_matrix_publisher = rospy.Publisher("/adjacency_matrix", Float32MultiArray, queue_size=10)
+    adjacency_matrix_publisher = rospy.Publisher("/graph_building/adjacency_matrix", Float32MultiArray, queue_size=10)
     listener()
