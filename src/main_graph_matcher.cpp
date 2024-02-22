@@ -6,11 +6,12 @@
 
 int main(int argc, char **argv){
   
-  ros::init(argc, argv, "main_graph_matcher");
-  ros::NodeHandle graph_matcher_node;
-  
-  GraphMatcher graph_matcher(graph_matcher_node);
+    ros::init(argc, argv, "main_graph_matcher");
+    ros::NodeHandle graph_matcher_node;
 
-  ros::spin();
-  return 0;
+    //GraphMatcher graph_matcher(graph_matcher_node);
+    GraphMatcher graph_matcher(graph_matcher_node, true);
+    ros::spin();
+    return 0;
+    
 }

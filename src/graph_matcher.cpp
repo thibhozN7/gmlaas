@@ -1,7 +1,7 @@
 #include "graph_matcher.hpp"
 #include <ros/ros.h>
 
-GraphMatcher::GraphMatcher(ros::NodeHandle& node) : m_node(node)
+GraphMatcher::GraphMatcher(ros::NodeHandle& node, const bool fake) : m_node(node), m_fake(fake)
 {
     // Initialize the graph matcher
     init();
@@ -15,7 +15,11 @@ void GraphMatcher::init()
     //m_pub = m_node.advertise<your_graph_msgs::Graph>("/", 1);
 
     // Initialize the subscriber(s)
-    m_sub = m_node.subscribe("graph_building/adjency_matrix", 1, &GraphMatcher::callback, this);
+    if (m_fake) {
+        m_sub = m_node.subscribe("graph_building/fake/adjency_matrix", 1, &GraphMatcher::callback, this);
+    } else {
+        m_sub = m_node.subscribe("graph_building/adjency_matrix", 1, &GraphMatcher::callback, this);
+    }
 }
 
 void GraphMatcher::callback(const std_msgs::Float32MultiArray::ConstPtr& msg)
