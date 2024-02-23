@@ -14,7 +14,7 @@ class GraphMatcher:
         self.m_adj_matrix_sub = rospy.Subscriber('/graph_building/adjacency_matrix',Float32MultiArray, self.callback)
         self.m_isomorphism_pub = rospy.Publisher('/graph_matching/isomorphism_list',Float32MultiArray, queue_size=10)
 
-    def buildMatrix(list, rows, cols):
+    def buildMatrix(self, list, rows, cols):
         return (np.array([list[i * cols:(i + 1) * cols] for i in range(rows)]))
 
     
