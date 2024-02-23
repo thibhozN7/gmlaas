@@ -15,6 +15,11 @@ connections = [[5, 8],
                [1, 3],
                [1, 4]]
 
+def listener():
+    rospy.init_node('apriltag_listener', anonymous=False)
+    rospy.Subscriber("/tag_detections", AprilTagDetectionArray, apriltag_callback)
+    rospy.spin()
+
 def apriltag_callback(data):
     # Set to store existing node IDs
     existing_node_ids = []
@@ -63,12 +68,7 @@ def apriltag_callback(data):
     adjacency_matrix = tree.calculate_adjacency_matrix()
     adjacency_matrix_msg = Float32MultiArray(data=sum(adjacency_matrix, []))
     adjacency_matrix_publisher.publish(adjacency_matrix_msg)
-  
 
-def listener():
-    rospy.init_node('apriltag_listener', anonymous=True)
-    rospy.Subscriber("/tag_detections", AprilTagDetectionArray, apriltag_callback)
-    rospy.spin()
 
 if __name__ == '__main__':
     adjacency_matrix_publisher = rospy.Publisher("/graph_building/adjacency_matrix", Float32MultiArray, queue_size=10)
