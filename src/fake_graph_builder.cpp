@@ -61,7 +61,7 @@ void FakeGraphBuilder::calculateAdjacencyMatrix(std::vector<std::vector<int>>& a
         // Check if the from and to nodes exist in the node mapping
         if (nodeMapping.find(edge->from->id) == nodeMapping.end() ||
             nodeMapping.find(edge->to->id) == nodeMapping.end()) {
-            // Handle error: Nodes not found in the node mapping
+            // Handle error
             ROS_ERROR("Error: Nodes not found in the node mapping.");
             return;
         }
@@ -95,9 +95,12 @@ void FakeGraphBuilder::publishAdjacencyMatrix(const std::vector<std::vector<int>
     matrix.layout.dim[1].stride = size;
     matrix.layout.dim[1].label = "cols";
 
+    ROS_INFO_STREAM("Matrix size: " << size << "x" << size);
+
     for (int i = 0; i < size; ++i) {
         for (int j = 0; j < size; ++j) {
             matrix.data.push_back(static_cast<float>(adjacencyMatrix[i][j]));
+            ROS_INFO_STREAM("Matrix data: " << matrix.data.back());
         }
     }
 
@@ -131,7 +134,7 @@ void FakeGraphBuilder::printNodeMapping(const std::unordered_map<int, int>& node
     }
 }
 
-void FakeGraphBuilder::createFakeGraph() {
+void FakeGraphBuilder::initFakeGraph() {
     // Create a fake graph
 
     // Nodes
@@ -165,7 +168,9 @@ void FakeGraphBuilder::createFakeGraph() {
     this->addEdge(new Edge(node1, node12, "branch12"));
     this->addEdge(new Edge(node12, node121, "branch121"));
     this->addEdge(new Edge(node1, node13, "branch13"));
+}
 
+void FakeGraphBuilder::processFakeGraph() {
     // Create node mapping
     std::unordered_map<int, int> nodeMapping = this->createNodeMapping();
 
@@ -176,4 +181,6 @@ void FakeGraphBuilder::createFakeGraph() {
     std::vector<std::vector<int>> adjacencyMatrix;
     this->calculateAdjacencyMatrix(adjacencyMatrix);
     this->publishAdjacencyMatrix(adjacencyMatrix);
+    sleep(5);
+
 }

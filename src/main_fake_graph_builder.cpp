@@ -5,13 +5,16 @@
 
 int main(int argc, char **argv){
 
-  ros::init(argc, argv, "main_fake_graph_builder");
-  ros::NodeHandle fake_graph_builder_node;
-  
-  FakeGraphBuilder fake_graph_builder(fake_graph_builder_node);
-  fake_graph_builder.createFakeGraph();
+    ros::init(argc, argv, "main_fake_graph_builder");
+    ros::NodeHandle fake_graph_builder_node;
+    FakeGraphBuilder fake_graph_builder(fake_graph_builder_node);
+    fake_graph_builder.initFakeGraph();
 
-  ros::spin();
+    while (true){
+        fake_graph_builder.processFakeGraph();
+    }
+    ros::spin();
 
-  return 0;
+    return 0;
+
 }

@@ -9,13 +9,27 @@ import functools
 from std_msgs.msg import Float32MultiArray, MultiArrayDimension
 
 class GraphMatcher:
-    def __init__(self):
-        rospy.init_node('graph_matcher_py', anonymous=True)
-        self.m_adj_matrix_sub = rospy.Subscriber('/graph_building/adjacency_matrix',Float32MultiArray, self.callback)
-        self.m_isomorphism_pub = rospy.Publisher('/graph_matching/isomorphism_list',Float32MultiArray, queue_size=10)
+    def __init__(self, fake=False):
 
-    def buildMatrix(list, rows, cols):
-        return (np.array([list[i * cols:(i + 1) * cols] for i in range(rows)]))
+        rospy.init_node("graph_matcher_py", anonymous=False)        
+        rospy.loginfo("Starting graph matcher...")
+
+        if fake:
+            topic = "/graph_building/fake/adjency_matrix"
+            rospy.loginfo("Using fake adjency matrix topic.")
+        else:
+            topic = "/graph_building/adjency_matrix"
+            rospy.loginfo("Using real adjency matrix topic.")
+        self.m_adj_matrix_sub = rospy.Subscriber(topic,Float32MultiArray, self.callback,queue_size=10)
+        self.m_isomorphism_pub = rospy.Publisher("/graph_matching/isomorphism_list",Float32MultiArray, queue_size=10)
+        
+        
+        self.reference = [0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.0, 2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        self.reference_adj_matrix = self.buildMatrix(self.reference, 9, 9)    
+    def buildMatrix(self,list, rows, cols):
+        matrix = np.array([list[i * cols:(i + 1) * cols] for i in range(rows)])
+        rospy.loginfo(f"buildedMatrix: {matrix}")
+        return matrix
 
     
     def solvePygmMatching(self, input_adj_matrix, reference_adj_matrix):
@@ -66,7 +80,7 @@ class GraphMatcher:
         rospy.loginfo(f"Published: {relationships_msg}")
 
 if __name__ == "__main__":
-    matcher = GraphMatcher()
+    matcher = GraphMatcher(True)
     rospy.spin()
 
         

@@ -52,7 +52,9 @@ public:
     void addEdge(Edge* edge);
     void calculateAdjacencyMatrix(std::vector<std::vector<int>>& adjacencyMatrix, bool sym = false);
     void publishAdjacencyMatrix(const std::vector<std::vector<int>>& adjacencyMatrix);
-    void createFakeGraph();
+    void initFakeGraph();
+    void processFakeGraph();
+
 };
 
 #endif // FAKE_GRAPH_BUILDER_HPP
