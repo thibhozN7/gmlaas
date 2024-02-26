@@ -52,23 +52,26 @@ class EstimateHMatrix:
         ax.set_ylabel('Y')
         ax.set_zlabel('Z')
         ax.legend()
+        plt.show()
+
 
     def visualizeError(target, estimated):
         """Visualize the error between the target and estimated points."""
         error = np.linalg.norm(target - estimated, axis=1)
         max_error = np.max(error)
-        mean_error = np.mean(error)
-        print(f"Error: {error}")
+        min_error = np.min(error)
+        mae_error = np.mean(error)
+        mape_error = np.mean(np.abs(np.divide((target - estimated),target)))*100
         print(f"Max Positional Error: {max_error}")
-        print(f"Mean Positional Error: {mean_error}")
+        print(f"Min Positional Error: {min_error}")
+        print(f"MAE Positional Error: {mae_error}")
+        print(f"MAPE Positional Error (%): {mape_error}")
 
     def callback(self,points,target_points):
-    # Example of using the functions
         R_est, T_est = EstimateHMatrix(points, target_points)
         estimated_points = self.applyTransformation(points, R_est, T_est)
         self.visualizePoints(points, target_points, estimated_points)
         self.visualizeError(target_points, estimated_points)
-        plt.show()
     
 if __name__ == "__main__":
     estimate_h_matrix=EstimateHMatrix()
