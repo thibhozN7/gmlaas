@@ -1,4 +1,21 @@
 <launch>
+    <arg name="fake_arg"         default="true"/>
 
-    
+    <!-- Launch graph_builder_node with fake=false -->
+    <group if="$(arg fake_arg)">
+        <node pkg="gmlaas" type="fake_graph_builder_node" name="main_fake_graph_builder" output="screen">
+        </node>
+    </group>
+
+    <!-- Launch graph_builder_node with fake=true -->
+    <group unless="$(arg fake_arg)">
+        <node name="apriltag_to_graph_py" pkg="gmlaas" type="apriltag_to_graph.py" output="screen">
+            <!-- Add any necessary arguments here -->
+        </node>
+    </group>
+
+    <!-- Launch graph_matcher_node -->
+    <node name="graph_matcher_py" pkg="gmlaas" type="graph_matcher.py" output="screen">
+        <!-- Add any necessary arguments here -->
+    </node>
 </launch>
