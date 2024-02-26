@@ -17,8 +17,8 @@ class AprilTagToGraph:
         self.existing_edges = []  
         rospy.init_node(nameNode, anonymous=True)
         rospy.Subscriber("/tag_detections", AprilTagDetectionArray, self.apriltag_listener_callback)
-        self.adjacency_matrix_publisher = rospy.Publisher(nameNode+"/adjacency_matrix", Float32MultiArray, queue_size=10)
-        self.index_matrix_publisher = rospy.Publisher(nameNode+"/original_sequential_matrix", Int32MultiArray, queue_size=10)
+        self.adjacency_matrix_publisher = rospy.Publisher("/graph_building/adjacency_matrix", Float32MultiArray, queue_size=10)
+        self.index_matrix_publisher = rospy.Publisher("/graph_building/original_sequential_matrix", Int32MultiArray, queue_size=10)
         
 
     def apriltag_listener_callback(self,data):

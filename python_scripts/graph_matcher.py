@@ -8,9 +8,10 @@ import yaml
 import os
 
 
+fake = rospy.get_param('~fake_arg', 'True')
 
 class GraphMatcher:
-    def __init__(self, fake=False):
+    def __init__(self, fake = True):
 
         rospy.init_node("graph_matcher_py", anonymous=False)        
         rospy.loginfo("Starting graph matcher...")
@@ -132,7 +133,7 @@ class GraphMatcher:
         rospy.loginfo(f"...Published:\n {relationships_msg}")
 
 if __name__ == "__main__":
-    matcher = GraphMatcher(True)
+    matcher = GraphMatcher(fake)
     rospy.spin()
 
         
