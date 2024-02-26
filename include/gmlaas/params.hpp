@@ -26,15 +26,15 @@ const double baseline = 0.018;// meters
 const double max_distance_threshold = 0.65;//meters 
 
 const std::string data_init_pos_file_path = 
-	"/home/fgebrayel/r2t2-deficle/catkin_ws/src/r2t2-deficle/visual_servoing_realsense_visp/python_scripts/data_plots/init_position_sample_file.txt";
+	"~/catkin_ws/src/r2t2-deficle/visual_servoing_realsense_visp/python_scripts/data_plots/init_position_sample_file.txt";
 
 const std::string data_pos_file_path = 
-	"/home/fgebrayel/r2t2-deficle/catkin_ws/src/r2t2-deficle/visual_servoing_realsense_visp/python_scripts/data_plots/position_sample_file.txt";
+	"~/catkin_ws/src/r2t2-deficle/visual_servoing_realsense_visp/python_scripts/data_plots/position_sample_file.txt";
 
 const std::string data_vel_file_path =
-	"/home/fgebrayel/r2t2-deficle/catkin_ws/src/r2t2-deficle/visual_servoing_realsense_visp/python_scripts/data_plots/vel_sample_file.txt";
+	"~/catkin_ws/src/r2t2-deficle/visual_servoing_realsense_visp/python_scripts/data_plots/vel_sample_file.txt";
 
 const std::string data_vel_command_file_path =
-	"/home/fgebrayel/r2t2-deficle/catkin_ws/src/r2t2-deficle/visual_servoing_realsense_visp/python_scripts/data_plots/vel_command_file.txt";
+	"~/catkin_ws/src/r2t2-deficle/visual_servoing_realsense_visp/python_scripts/data_plots/vel_command_file.txt";
 
 }

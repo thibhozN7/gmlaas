@@ -4,7 +4,7 @@
 #include <sensor_msgs/Image.h>
 #include <std_msgs/Float64MultiArray.h>
 
-#include "visual_servoing_realsense_visp/point_3d.h"
+//#include "visual_servoing_realsense_visp/point_3d.h"
 
 #include <visp3/visual_features/vpFeatureBuilder.h>
 #include <visp3/vs/vpServo.h>
@@ -31,7 +31,7 @@ public:
     void computeCommandCallbackPbvs(const std_msgs::Float64MultiArray& msg);
     // void init(int argc, char **argv);
     void init();
-    bool point3dMsgIsNan(const visual_servoing_realsense_visp::point_3dConstPtr& msg);
+    //bool point3dMsgIsNan(const visual_servoing_realsense_visp::point_3dConstPtr& msg);
     void publishVelocity(const vpColVector& vel);
     void velCommandCallback(const geometry_msgs::TwistStampedConstPtr& vel_command_msg);
 

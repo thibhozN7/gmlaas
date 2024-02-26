@@ -64,7 +64,7 @@ void VisualServoingCommand::init(){
         std::cout << "Lambda gain initialization" << m_lambda_gain << std::endl;
     }
 
-    m_flag = true;
+    m_flag = true; // for IBVS command computation
 
     // Initializing the velocity command to zero in all directions.
     m_vel_twist_stamped.twist.linear.x = 0;
@@ -112,12 +112,12 @@ void VisualServoingCommand::computeCommandCallbackPbvs(const std_msgs::Float64Mu
     
     //Setting linear and angular velocity components to the end effector
     // Gains adjust the effect enforced by the velocity command
-    m_vel_twist_stamped.twist.linear.x = m_x_gain*m_vel[0]; //back & forward
+    m_vel_twist_stamped.twist.linear.x = m_x_gain*m_vel[0]; 
     m_vel_twist_stamped.twist.linear.y = m_y_gain*m_vel[1];
     m_vel_twist_stamped.twist.linear.z = m_z_gain*m_vel[2];
-    m_vel_twist_stamped.twist.angular.x = m_rx_gain*m_vel[3];
-    m_vel_twist_stamped.twist.angular.y = m_ry_gain*m_vel[4];
-    m_vel_twist_stamped.twist.angular.z = m_rz_gain*m_vel[5];
+    m_vel_twist_stamped.twist.angular.x = m_rx_gain*m_vel[3]; //roll
+    m_vel_twist_stamped.twist.angular.y = m_ry_gain*m_vel[4]; //pitch
+    m_vel_twist_stamped.twist.angular.z = m_rz_gain*m_vel[5]; //yaw
 
     //Publishing to /visual_servoing_command/velocity_ref topic
     m_vel_pub.publish(m_vel_twist_stamped);
@@ -135,6 +135,7 @@ void VisualServoingCommand::publishVelocity(const vpColVector& vel){
         vel_twist_stamped.twist.angular.x = m_rx_gain*vel[3];
         vel_twist_stamped.twist.angular.y = m_ry_gain*vel[4];
         vel_twist_stamped.twist.angular.z = m_rz_gain*vel[5];
+
         m_vel_pub.publish(vel_twist_stamped);
         
         // ros::param::get("save_velocity_value", m_save_velocity);
@@ -159,19 +160,19 @@ void VisualServoingCommand::publishVelocity(const vpColVector& vel){
     }
 }
 
-bool VisualServoingCommand::point3dMsgIsNan(const visual_servoing_realsense_visp::point_3dConstPtr& msg){
+// bool VisualServoingCommand::point3dMsgIsNan(const visual_servoing_realsense_visp::point_3dConstPtr& msg){
 
-    if(msg){
-        for(const auto& p : msg->p_3d){
-            if(!(isnan(p.x) && isnan(p.y) && isnan(p.z))){
-                return false;
-            }
-        }
-        return true;
-    }else{
-        return true;
-    }
-}    
+//     if(msg){
+//         for(const auto& p : msg->p_3d){
+//             if(!(isnan(p.x) && isnan(p.y) && isnan(p.z))){
+//                 return false;
+//             }
+//         }
+//         return true;
+//     }else{
+//         return true;
+//     }
+// }    
 
 void VisualServoingCommand::velCommandCallback(const geometry_msgs::TwistStampedConstPtr& vel_command_msg){
     
