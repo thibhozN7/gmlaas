@@ -15,7 +15,7 @@ class GraphMatcher:
         self.m_isomorphism_pub = rospy.Publisher('/graph_matching/isomorphism_list',Float32MultiArray, queue_size=10)
 
     def buildMatrix(list, rows, cols):
-        return (np.array([list[i * cols:(i + 1) * cols] for i in range(rows)]))
+        return (np.array([list[i*cols:(i + 1)*cols] for i in range(rows)]))
 
     
     def solvePygmMatching(self, input_adj_matrix, reference_adj_matrix):
@@ -46,6 +46,21 @@ class GraphMatcher:
         relationships_msg.data = list(relationships_data)
         return relationships_msg
     
+    def computeRelationships(self, X):
+        """
+        Compute the relationships between the nodes of the input and reference graphs.
+        
+        Args:
+            X (numpy.ndarray): Matching matrix => X[i, j] is the probability that node i in the input graph is matched to node j in the reference graph.
+        Returns:
+            relationships_data (list): List of relationships between the nodes of the input and reference graphs.
+        """
+        relationships_data = []
+        max_idx = np.argmax(X, axis=1)
+        for i in range(X.shape[0]):
+                    relationships_data.append(max_idx[i])
+        return relationships_data
+    
     def callback(self, data):
         rows = data.layout.dim[0].size
         cols = data.layout.dim[1].size
@@ -53,6 +68,9 @@ class GraphMatcher:
 
         adj_matrix_data = list(data.data)
         adj_matrix = self.buildMatrix(adj_matrix_data, rows, cols)
+
+
+
 
         rospy.loginfo("Solving graph matching...")
         K, X = self.solvePygmMatching(adj_matrix, self.reference_adj_matrix)
