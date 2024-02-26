@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
 import rospy
-import Graph
+import graph_builder as Graph
 from collections import OrderedDict
 from apriltag_ros.msg import AprilTagDetectionArray
 from std_msgs.msg import Header
-from apriltag_listener.msg import CustomMsg
+from gmlaas.msg import CustomMsg
 
 class AprilTagToGraph:
 
@@ -15,7 +15,7 @@ class AprilTagToGraph:
         self.tree = Graph.Graph() 
         self.existing_edges = []  
         self.header = Header()
-        rospy.init_node(nameNode, anonymous=True)
+        rospy.init_node(nameNode, anonymous=False)
         rospy.Subscriber("/tag_detections", AprilTagDetectionArray, self.apriltag_listener_callback)
         self.publisher = rospy.Publisher(nameNode + "/graph_builder_data", CustomMsg, queue_size=10)
 

@@ -7,6 +7,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   sensor_msgs
   message_generation
+  apriltag_ros
 )
 
 add_message_files(
@@ -18,7 +19,7 @@ generate_messages(
    std_msgs  # Or other packages containing msgs
  )
  
-catkin_package(CATKIN_DEPENDS message_runtime)
+catkin_package(CATKIN_DEPENDS message_runtime std_msgs)
 
 set(gmlaas_INCLUDE_DIR "include/gmlaas")
 set(gmlaas_SOURCE_DIR "src")
