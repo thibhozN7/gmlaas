@@ -3,7 +3,7 @@ import rospy
 import numpy as np
 import pygmtools as pygm
 import functools
-from std_msgs.msg import Float32MultiArray, MultiArrayDimension, MultiArrayLayout
+from std_msgs.msg import Int32MultiArray,Float32MultiArray, MultiArrayDimension, MultiArrayLayout
 import yaml
 import os
 
@@ -106,7 +106,7 @@ class GraphMatcher:
 
 
     def buildMessage(self, relationships_data):
-        relationships_msg = Float32MultiArray()
+        relationships_msg = Int32MultiArray()
         relationships_msg.data = list(relationships_data)
         return relationships_msg
     
