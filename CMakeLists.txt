@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
   FILES
   CustomMsg.msg
+  PreHMsg.msg
 )
 generate_messages(
    DEPENDENCIES

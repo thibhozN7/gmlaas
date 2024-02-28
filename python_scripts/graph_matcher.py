@@ -62,26 +62,26 @@ class GraphMatcher:
         return self.reference_adj_matrix
     
     
-    def solvePygmMatching(self, input_adj_matrix, reference_adj_matrix):
+    def solvePygmMatching(self, current_adj_matrix, reference_adj_matrix):
         """
         Compute the optimal matching between two graphs.
         
         Args:
-            input_adj_matrix (numpy.ndarray): Adjacency matrix of the input graph.
+            current_adj_matrix (numpy.ndarray): Adjacency matrix of the current graph.
             reference_adj_matrix (numpy.ndarray): Adjacency matrix of reference graph.
         Returns:
             K (numpy.ndarray): Affinity matrix.
-            X (numpy.ndarray): Matching matrix => X[i, j] is the probability that node i in the input graph is matched to node j in the reference graph.
+            X (numpy.ndarray): Matching matrix => X[i, j] is the probability that node i in the current graph is matched to node j in the reference graph.
         """
         pygm.set_backend('numpy')
         np.random.seed(1)
 
-        print(input_adj_matrix.shape)
+        print(current_adj_matrix.shape)
         print(reference_adj_matrix.shape)
 
-        n1 = np.array(input_adj_matrix.shape)
+        n1 = np.array(current_adj_matrix.shape)
         n2 = np.array(reference_adj_matrix.shape)
-        conn1, edge1 = pygm.utils.dense_to_sparse(input_adj_matrix)
+        conn1, edge1 = pygm.utils.dense_to_sparse(current_adj_matrix)
         conn2, edge2 = pygm.utils.dense_to_sparse(reference_adj_matrix)
 
         gaussian_aff = functools.partial(pygm.utils.gaussian_aff_fn, sigma=.1)
@@ -91,12 +91,12 @@ class GraphMatcher:
     
     def computeRelationships(self, X):
         """
-        Compute the relationships between the nodes of the input and reference graphs.
+        Compute the relationships between the nodes of the current and reference graphs.
         
         Args:
-            X (numpy.ndarray): Matching matrix => X[i, j] is the probability that node i in the input graph is matched to node j in the reference graph.
+            X (numpy.ndarray): Matching matrix => X[i, j] is the probability that node i in the current graph is matched to node j in the reference graph.
         Returns:
-            relationships_data (list): List of relationships between the nodes of the input and reference graphs.
+            relationships_data (list): List of relationships between the nodes of the current and reference graphs.
         """
         relationships_data = []
         max_idx = np.argmax(X, axis=1)
@@ -104,11 +104,12 @@ class GraphMatcher:
                     relationships_data.append(max_idx[i])
         return relationships_data
 
+    def publishHMatrix(self,data):        
+        h_matrix_msg = Float32MultiArray()
 
-    def buildMessage(self, relationships_data):
-        relationships_msg = Int32MultiArray()
-        relationships_msg.data = list(relationships_data)
-        return relationships_msg
+
+        self.m_h_matrix_pub.publish(data)
+    
     
     def callback(self, msg):
         data = msg.data

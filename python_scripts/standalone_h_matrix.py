@@ -75,6 +75,7 @@ T = np.array([10, -10, 10]) #translation vector
 
 #generate points
 source_points = generate_points(n_points,bound)
+print (source_points)
 target_points = apply_transformation(source_points, R, T)
 noise = bound/100
 noise_target_points = apply_transformation(source_points, R, T) + np.random.uniform(-noise,noise,(n_points,3))
