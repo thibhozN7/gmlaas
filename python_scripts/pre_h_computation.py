@@ -42,7 +42,7 @@ class PreHMatrix:
             reader = csv.reader(file)
             next(reader)  # Skip the header row
             for row in reader:
-                self.m_reference_index_matrix = row[4]
+                self.m_reference_index_matrix = [float(x) for x in row[4].replace("(","").replace(")","").split(", ")]
         rospy.loginfo("Reference index matrix obtained.")
 
     def reshapeCurrentGraphData(self, msg):
