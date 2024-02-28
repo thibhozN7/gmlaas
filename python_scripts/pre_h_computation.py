@@ -5,6 +5,7 @@ from std_msgs.msg import Float32MultiArray, MultiArrayDimension
 from message_filters import Subscriber, TimeSynchronizer
 from gmlaas.msg import CustomMsg 
 from gmlaas.msg import PreHMsg
+from gmlaas.msg import GraphMatcherMsg
 from apriltag_ros.msg import AprilTagDetectionArray
 
 import os
@@ -19,13 +20,12 @@ class PreHMatrix:
         rospy.init_node("pre_h_matrix", anonymous=False)
 
         # Define subscribers
-        self.m_isomorphism_list_sub = Subscriber("/graph_matching/isomorphism_list", Float32MultiArray)
-        self.m_graph_sub = Subscriber("/graph_building/data", CustomMsg)
-        self.m_tag_sub = Subscriber("/tag_detections", AprilTagDetectionArray)
+        self.m_graph_sub = rospy.Subscriber("/graph_matching/data", GraphMatcherMsg,self.callback)
+        # self.m_tag_sub = Subscriber("/tag_detections", AprilTagDetectionArray)
 
-        # Synchronize subscribers
-        sync = TimeSynchronizer([self.m_isomorphism_list_sub, self.m_graph_sub, self.m_tag_sub], queue_size=10)
-        sync.registerCallback(self.callback)
+        # # Synchronize subscribers
+        # sync = TimeSynchronizer([self.m_isomorphism_list_sub, self.m_graph_sub, self.m_tag_sub], queue_size=10)
+        # sync.registerCallback(self.callback)
 
         # Define publisher
         self.m_pre_h_pub = rospy.Publisher('/h_computation/input_matrices', PreHMsg, queue_size=10)
@@ -36,22 +36,12 @@ class PreHMatrix:
         self.m_h_current_coordinates = np.array([])
         self.m_h_desired_coordinates = np.array([])
 
-    def storeCurrentGraphData(self, m_graph_sub):
+    def storeCurrentGraphData(self):
         # Store the timestamp, adjacency matrix, and indexed matrix from the graph data
-        self.timestamp = m_graph_sub.header.stamp
-        self.adjacency_matrix = m_graph_sub.adjacency_matrix
-        self.current_indexed_matrix = m_graph_sub.indexed_matrix
-        self.isomorphism_list = self.m_isomorphism_list_sub.data
-
-    ## Might change with the new message
-    def storeCurrentTagData(self, m_tag_sub):
-        # Store the current tag coordinates from the tag detections
-        for detection in m_tag_sub.detections:
-            tag_id = detection.id[0]
-            x = detection.pose.pose.pose.position.x
-            y = detection.pose.pose.pose.position.y
-            z = detection.pose.pose.pose.position.z
-            self.m_current_dict[tag_id] = [x, y, z]
+        self.adjacency_matrix = self.m_graph_sub.adjacency_matrix
+        self.current_indexed_matrix = self.m_graph_sub.indexed_matrix
+        self.isomorphism_list = self.m_graph_sub.indexed_matrix
+        rospy.loginfo("Current graph data stored.")
 
     def buildReferenceIndexMatrix(self):
         # Read the reference index matrix from the reference tags dataset
@@ -60,8 +50,19 @@ class PreHMatrix:
             next(reader)  # Skip the header row
             for row in reader:
                 self.m_reference_index_matrix = row[4]
+        rospy.loginfo("Reference index matrix built.")
     
-    def buildDesiredDict(self):
+    def buildCurrentTagDict(self):
+        # Store the current tag coordinates from the tag detections
+        for detection in self.m_graph_sub.detections:
+            tag_id = detection.id[0]
+            x = detection.pose.pose.pose.position.x
+            y = detection.pose.pose.pose.position.y
+            z = detection.pose.pose.pose.position.z
+            self.m_current_dict[tag_id] = [x, y, z]
+        rospy.loginfo("Current tag dictionary built.")
+    
+    def buildDesiredTagDict(self):
         # Build dictionaries for desired tag coordinates
         with open(f"{package_dir}/datasets/desired/tags_dataset.csv", "r") as file:
             reader = csv.reader(file)
@@ -72,6 +73,7 @@ class PreHMatrix:
                 y = float(row[4])
                 z = float(row[5])
                 self.m_desired_dict[tag_id] = [x, y, z]
+        rospy.loginfo("Desired tag dictionary built.")
 
     def calculateCoordinates(self):
         # Calculate the current and desired coordinates for the isomorphism list
@@ -83,9 +85,9 @@ class PreHMatrix:
                 self.m_h_current_coordinates = np.append(self.m_h_current_coordinates, self.m_current_dict[cur_id])
         check = len(self.m_h_current_coordinates) == len(self.m_h_desired_coordinates)
         if check:
-            rospy.loginfo("The current and desired coordinates match.")
+            rospy.loginfo("The current and desired coordinates matrices match.")
         else:
-            rospy.loginfo("The current and desired coordinates do not match.")
+            rospy.loginfo("The current and desired coordinates matrices do not match.")
     
     def publishMatrix(self, current_coordinates, desired_coordinates):
         # Publish the current and desired coordinates as a PreHMsg message
@@ -93,11 +95,7 @@ class PreHMatrix:
         msg.current_coordinates = list(current_coordinates.flatten())
         msg.desired_coordinates = list(desired_coordinates.flatten())
         self.m_pre_h_pub.publish(msg)
-
-
-        print(f"Received synchronized data at timestamp {self.timestamp}")
-        print("Adjacency Matrix:", self.adjacency_matrix)
-        print("Indexed Matrix:", self.indexed_matrix)
+        rospy.loginfo("Coordinates matrices published.")
 
     def callback(self, m_isomorphism_list_sub, m_graph_sub, m_tag_sub):
         # Callback function for synchronized data
