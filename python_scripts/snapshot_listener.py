@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import rospy
-from gmlaas.msg import CustomMsg
+from gmlaas.msg import GraphBuilderMsg
 from apriltag_ros.msg import AprilTagDetectionArray
 from message_filters import Subscriber, TimeSynchronizer
 import datetime as dt
@@ -41,10 +41,7 @@ file2.write(f"<TITLE : Snapshot of {name_csvfile}: Tags Dataset (YYYY-MM-DD HH:M
 file1.write("timestamp sec, timpestamp nsecs, number_of_tags, adjacency_matrix, indexed_matrix\n") 
 file2.write("timestamp, timpestamp nsecs, tag_id, x, y, z\n")
 
-# Control frequency settings
-#desired_rate = 1  # Desired acquisition frequency in Hz
-
-    
+success = False
 
 def callback(graph_data, tag_detections):
     timestamp_secs = graph_data.header.stamp.secs #int
@@ -72,12 +69,18 @@ def callback(graph_data, tag_detections):
 
         # Write data to file2
         file2.write(f"{timestamp_secs}, {timestamp_nsecs}, {tag_id}, {x}, {y}, {z}\n")
-    
+        
+        file1.flush() 
+        file2.flush() 
+        success = True
+
+    if success:
+        rospy.loginfo("Data successfully written to files.")
+        rospy.signal_shutdown("Data received and written to file.")
 
 def register_callback(sync, callback):
     try:
         sync.registerCallback(callback)
-
     except RuntimeError as e:
         rospy.loginfo(f"Error occurred during callback registration: {e}")
 
@@ -87,14 +90,22 @@ if __name__ == "__main__":
     rospy.init_node("snapshot_listener", anonymous=False)
 
     # Use message_filters to synchronize messages from both topics based on timestamps
-    graph_sub = Subscriber("graph_building/data", CustomMsg)
+    graph_sub = Subscriber("graph_building/data", GraphBuilderMsg)
     tag_sub = Subscriber("/tag_detections", AprilTagDetectionArray)
-    sync = TimeSynchronizer([graph_sub, tag_sub], queue_size=1)
 
+    print("timer starts now")
+    for c in range(5):
+        print(5-c)
+        rospy.sleep(1)
+    print("timer ends now")
+    
+    sync = TimeSynchronizer([graph_sub, tag_sub], queue_size=10)
+    
+    rospy.loginfo("Registering callback...")
     register_callback(sync, callback)
-    
-    #rospy.spinOnce()
-    
+    rospy.spin()
+
+
 
 
             

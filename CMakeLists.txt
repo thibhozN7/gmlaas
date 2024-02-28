@@ -31,13 +31,6 @@ include_directories(
   ${gmlaas_INCLUDE_DIR}
 )
 
-# graph_matcher_node
-add_executable(graph_matcher_node
-  ${gmlaas_SOURCE_DIR}/main_graph_matcher.cpp
-  ${gmlaas_SOURCE_DIR}/graph_matcher.cpp
-)
-target_link_libraries(graph_matcher_node ${catkin_LIBRARIES})
-
 # fake_graph_builder_node
 add_executable(fake_graph_builder_node
   ${gmlaas_SOURCE_DIR}/main_fake_graph_builder.cpp
