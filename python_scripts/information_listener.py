@@ -67,7 +67,7 @@ if __name__ == "__main__":
     rospy.init_node("information_listener", anonymous=False)
 
     # Use message_filters to synchronize messages from both topics based on timestamps
-    graph_sub = Subscriber("/apriltag_to_graph_py/graph_builder_data", CustomMsg)
+    graph_sub = Subscriber("graph_building/data", CustomMsg)
     tag_sub = Subscriber("/tag_detections", AprilTagDetectionArray)
     sync = TimeSynchronizer([graph_sub, tag_sub], queue_size=1)
 
