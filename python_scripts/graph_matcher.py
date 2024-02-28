@@ -104,9 +104,9 @@ class GraphMatcher:
                     relationships_data.append(max_idx[i])
         return relationships_data
 
+
     def publishHMatrix(self,data):        
         h_matrix_msg = Float32MultiArray()
-
 
         self.m_h_matrix_pub.publish(data)
     
