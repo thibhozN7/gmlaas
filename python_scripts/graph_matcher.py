@@ -69,7 +69,7 @@ class GraphMatcher:
         self.header = msg.header
         adjacency_matrix = msg.adjacency_matrix
         self.indexed_matrix = msg.indexed_matrix
-        self.adjacency_matrix=self.buildMatrix(adjacency_matrix, len(self.indexed_matrix), len(self.indexed_matrix))
+        self.current_adjacency_matrix=self.buildMatrix(adjacency_matrix, len(self.indexed_matrix), len(self.indexed_matrix))
         self.tags_id = msg.tags_id
         self.coordinate_matrix = msg.coordinate_matrix
 
@@ -78,7 +78,7 @@ class GraphMatcher:
         custom_msg = GraphMatcherMsg()
         custom_msg.header = self.header
         # Add adjacency matrix data
-        custom_msg.adjacency_matrix = [ float(value) for row in self.adjacency_matrix for value in row ]
+        custom_msg.adjacency_matrix = [ float(value) for row in self.current_adjacency_matrix for value in row ]
         # Add indexed matrix data
         custom_msg.indexed_matrix = self.indexed_matrix
         # Add isomorphism list data
@@ -92,7 +92,7 @@ class GraphMatcher:
         self.m_graph_matcher_data_pub.publish(custom_msg)
     
 
-    def solvePygmMatching(self, input_adj_matrix, reference_adj_matrix):
+    def solvePygmMatching(self):
         """
         Compute the optimal matching between two graphs.
         
@@ -106,13 +106,13 @@ class GraphMatcher:
         pygm.set_backend('numpy')
         np.random.seed(1)
 
-        print(current_adj_matrix.shape)
-        print(reference_adj_matrix.shape)
+        print(self.current_adj_matrix.shape)
+        print(self.reference_adj_matrix.shape)
 
-        n1 = np.array(current_adj_matrix.shape)
-        n2 = np.array(reference_adj_matrix.shape)
-        conn1, edge1 = pygm.utils.dense_to_sparse(current_adj_matrix)
-        conn2, edge2 = pygm.utils.dense_to_sparse(reference_adj_matrix)
+        n1 = np.array(self.current_adj_matrix.shape)
+        n2 = np.array(self.reference_adj_matrix.shape)
+        conn1, edge1 = pygm.utils.dense_to_sparse(self.current_adj_matrix)
+        conn2, edge2 = pygm.utils.dense_to_sparse(self.reference_adj_matrix)
 
         gaussian_aff = functools.partial(pygm.utils.gaussian_aff_fn, sigma=.1)
         K = pygm.utils.build_aff_mat(None, edge1, conn1, None, edge2, conn2, None, None, None, None, edge_aff_fn=gaussian_aff)
