@@ -2,6 +2,7 @@
 
 import rospy
 import graph_builder
+from collections import OrderedDict
 from apriltag_ros.msg import AprilTagDetectionArray
 from std_msgs.msg import Float32MultiArray
 from std_msgs.msg import Int32MultiArray
@@ -16,10 +17,10 @@ class AprilTagToGraph:
         self.tree = graph_builder.Graph() 
         # Set to store existing edges
         self.existing_edges = []  
-        rospy.init_node(nameNode, anonymous=True)
+        rospy.init_node(nameNode, anonymous=False)
         rospy.Subscriber("/tag_detections", AprilTagDetectionArray, self.apriltag_listener_callback)
-        self.adjacency_matrix_publisher = rospy.Publisher("/graph_building/adjacency_matrix", Float32MultiArray, queue_size=10)
-        self.index_matrix_publisher = rospy.Publisher("/graph_building/original_sequential_matrix", Int32MultiArray, queue_size=10)
+        #self.adjacency_matrix_publisher = rospy.Publisher("/graph_building/adjacency_matrix", Float32MultiArray, queue_size=10)
+        #self.index_matrix_publisher = rospy.Publisher("/graph_building/original_sequential_matrix", Int32MultiArray, queue_size=10)
         self.publisher = rospy.Publisher("/graph_building/data", CustomMsg, queue_size=10)
 
 
@@ -34,6 +35,7 @@ class AprilTagToGraph:
             x = detection.pose.pose.pose.position.x
             y = detection.pose.pose.pose.position.y
             z = detection.pose.pose.pose.position.z
+            self.header = detection.pose.header
             self.add_apriltag_node_to_graph(id,x,y,z)
         self.add_apriltag_edge_to_graph()
     
@@ -78,21 +80,21 @@ class AprilTagToGraph:
         # Publish the CustomMessage on the combined topic
         self.publisher.publish(custom_msg)
 
-    def adjacency_publisher_fnc(self):
-        self.adjacency_matrix = self.tree.calculate_adjacency_matrix()
+    # def adjacency_publisher_fnc(self):
+    #     self.adjacency_matrix = self.tree.calculate_adjacency_matrix()
 
-        adjacency_matrix_msg = Float32MultiArray(data=sum(self.adjacency_matrix, []))
-        self.adjacency_matrix_publisher.publish(adjacency_matrix_msg)
+    #     adjacency_matrix_msg = Float32MultiArray(data=sum(self.adjacency_matrix, []))
+    #     self.adjacency_matrix_publisher.publish(adjacency_matrix_msg)
 
-    def index_publisher_fnc(self):
-        index_matrix = self.tree.create_node_mapping()
+    # def index_publisher_fnc(self):
+    #     index_matrix = self.tree.create_node_mapping()
         
-        matrix=[]
-        for key,_ in index_matrix.items():
-            matrix.append(key)
-        index_matrix_msg = Int32MultiArray()
-        index_matrix_msg.data= matrix
-        self.index_matrix_publisher.publish(index_matrix_msg)
+    #     matrix=[]
+    #     for key,_ in index_matrix.items():
+    #         matrix.append(key)
+    #     index_matrix_msg = Int32MultiArray()
+    #     index_matrix_msg.data= matrix
+    #     self.index_matrix_publisher.publish(index_matrix_msg)
 
 if __name__=="__main__":
     connections = [[5, 8],
