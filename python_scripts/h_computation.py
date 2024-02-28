@@ -95,10 +95,15 @@ class EstimateHMatrix:
 
     def callback(self,msg):
         self.m_current_points,self.m_desired_points = self.buildInputMatrices(msg) 
+        rospy.loginfo("Input matrices received.")
+        rospy.loginfo("Estimating pose...")
         R_est, T_est = self.estimateRTMatrices(self.m_current_points, self.m_desired_points)
+        rospy.loginfo("Pose estimation completed.")
+        rospy.loginfo("Building H matrix...")
         H = self.buildHmatrix(R_est, T_est)
         self.publishMatrix(H)
-
+        rospy.loginfo("H matrix published.")
+        
         #visualize the points and the error
         # self.m_estimated_points = self.applyTransformation(self.m_current_points, R_est, T_est)
         # self.visualizePoints(self.m_current_points, self.m_desired_points, self.m_estimated_points)
