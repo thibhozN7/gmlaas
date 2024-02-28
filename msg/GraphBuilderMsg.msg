@@ -2,5 +2,5 @@
 Header header
 float32[] adjacency_matrix
 int32[] indexed_matrix
-float64[] 3D_coordinates
+float64[] coordinate_matrix
 int32[] tags_id
