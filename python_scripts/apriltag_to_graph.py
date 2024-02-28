@@ -66,8 +66,8 @@ class AprilTagToGraph:
                     edge.calculate_edge_length(self.tree)
                     self.existing_edges.append((from_node_id, to_node_id))
         self.publisher_fnc()
-        self.adjacency_publisher_fnc()
-        self.index_publisher_fnc()
+        # self.adjacency_publisher_fnc()
+        # self.index_publisher_fnc()
 
     def publisher_fnc(self):
         # Create a CustomMessage
