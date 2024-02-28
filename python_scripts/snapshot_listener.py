@@ -51,7 +51,7 @@ def callback(graph_data, tag_detections):
     indexed_matrix = graph_data.indexed_matrix
 
     # Write data to file1
-    file1.write(f"{timestamp_secs}, {timestamp_nsecs}, {len(tag_detections.detections)}, {adjacency_matrix}, {indexed_matrix}\n")
+    file1.write(f"{timestamp_secs}; {timestamp_nsecs}; {len(tag_detections.detections)}; {adjacency_matrix}; {indexed_matrix}\n")
 
     # Process the received data as needed
     print(f"Received synchronized data at timestamp : {timestamp_secs}.{timestamp_nsecs}")
@@ -68,7 +68,7 @@ def callback(graph_data, tag_detections):
         print(f"Tag {tag_id} detected at coordinates ({x}, {y}, {z}) at timestamp : {timestamp_secs}.{timestamp_nsecs}")
 
         # Write data to file2
-        file2.write(f"{timestamp_secs}, {timestamp_nsecs}, {tag_id}, {x}, {y}, {z}\n")
+        file2.write(f"{timestamp_secs}; {timestamp_nsecs}; {tag_id}; {x}; {y}; {z}\n")
         
         file1.flush() 
         file2.flush() 
