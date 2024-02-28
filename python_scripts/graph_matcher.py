@@ -9,15 +9,16 @@ import os
 from collections import OrderedDict
 from gmlaas.msg import CustomMsg, GraphMatcherMsg
 
-fake = rospy.get_param('~fake_arg', 'True')
+fake = rospy.get_param('~fake_arg', 'False')
 
 class GraphMatcher:
-    def __init__(self, fake = True):
+    def __init__(self):
 
         rospy.init_node("graph_matcher_py", anonymous=False)        
         rospy.loginfo("Starting graph matcher...")
+        self.fake = fake
 
-        if fake:
+        if self.fake:
             topic = "/graph_building/fake/adjacency_matrix"
             rospy.loginfo("...Using fake adjacency matrix topic.")
         else:
@@ -145,7 +146,7 @@ class GraphMatcher:
         rospy.loginfo(f"...Published:\n {self.isomorphism_list}")
 
 if __name__ == "__main__":
-    matcher = GraphMatcher(fake)
+    matcher = GraphMatcher()
     rospy.spin()
 
         
