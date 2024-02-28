@@ -6,7 +6,7 @@ from collections import OrderedDict
 from apriltag_ros.msg import AprilTagDetectionArray
 from std_msgs.msg import Float32MultiArray
 from std_msgs.msg import Int32MultiArray, Header
-from gmlaas.msg import CustomMsg
+from gmlaas.msg import GraphBuilderMsg
 
 class AprilTagToGraph:
 
@@ -20,9 +20,7 @@ class AprilTagToGraph:
         self.header = Header()
         rospy.init_node(nameNode, anonymous=False)
         rospy.Subscriber("/tag_detections", AprilTagDetectionArray, self.apriltag_listener_callback)
-        #self.adjacency_matrix_publisher = rospy.Publisher("/graph_building/adjacency_matrix", Float32MultiArray, queue_size=10)
-        #self.index_matrix_publisher = rospy.Publisher("/graph_building/original_sequential_matrix", Int32MultiArray, queue_size=10)
-        self.publisher = rospy.Publisher("/graph_building/data", CustomMsg, queue_size=10)
+        self.publisher = rospy.Publisher("/graph_building/data", GraphBuilderMsg, queue_size=10)
 
 
     def apriltag_listener_callback(self,data):
@@ -31,12 +29,16 @@ class AprilTagToGraph:
         self.tree = graph_builder.Graph() 
         # Set to store existing edges
         self.existing_edges = []  
+        self.coordinate_matrix=[]
+        self.tag_id_list=[]
         for detection in data.detections:
             id = detection.id[0]
             x = detection.pose.pose.pose.position.x
             y = detection.pose.pose.pose.position.y
             z = detection.pose.pose.pose.position.z
             self.header = detection.pose.header
+            self.tag_id_list.append(id)
+            self.coordinate_matrix.append([x,y,z])
             self.add_apriltag_node_to_graph(id,x,y,z)
         self.add_apriltag_edge_to_graph()
     
@@ -66,36 +68,19 @@ class AprilTagToGraph:
                     edge.calculate_edge_length(self.tree)
                     self.existing_edges.append((from_node_id, to_node_id))
         self.publisher_fnc()
-        # self.adjacency_publisher_fnc()
-        # self.index_publisher_fnc()
 
     def publisher_fnc(self):
         # Create a CustomMessage
-        custom_msg = CustomMsg()
-        custom_msg.header = self.header
+        graph_builder_msg = GraphBuilderMsg()
+        graph_builder_msg.header = self.header
         # Add adjacency matrix data
-        custom_msg.adjacency_matrix = [ float(value) for row in self.tree.calculate_adjacency_matrix() for value in row ]
+        graph_builder_msg.adjacency_matrix = [ float(value) for row in self.tree.calculate_adjacency_matrix() for value in row ]
         # Add indexed matrix data
-        custom_msg.indexed_matrix = list(OrderedDict(self.tree.create_node_mapping()).keys())
-
+        graph_builder_msg.indexed_matrix = list(OrderedDict(self.tree.create_node_mapping()).keys())
+        graph_builder_msg.tags_id = self.tag_id_list
+        graph_builder_msg.coordinate_matrix = [ float(value) for row in self.coordinate_matrix for value in row ]
         # Publish the CustomMessage on the combined topic
-        self.publisher.publish(custom_msg)
-
-    # def adjacency_publisher_fnc(self):
-    #     self.adjacency_matrix = self.tree.calculate_adjacency_matrix()
-
-    #     adjacency_matrix_msg = Float32MultiArray(data=sum(self.adjacency_matrix, []))
-    #     self.adjacency_matrix_publisher.publish(adjacency_matrix_msg)
-
-    # def index_publisher_fnc(self):
-    #     index_matrix = self.tree.create_node_mapping()
-        
-    #     matrix=[]
-    #     for key,_ in index_matrix.items():
-    #         matrix.append(key)
-    #     index_matrix_msg = Int32MultiArray()
-    #     index_matrix_msg.data= matrix
-    #     self.index_matrix_publisher.publish(index_matrix_msg)
+        self.publisher.publish(graph_builder_msg)
 
 if __name__=="__main__":
     connections = [[5, 8],

@@ -3,11 +3,11 @@ import rospy
 import numpy as np
 import pygmtools as pygm
 import functools
-from std_msgs.msg import Int32MultiArray,Float32MultiArray, MultiArrayDimension, MultiArrayLayout
+from std_msgs.msg import Int32MultiArray,Float32MultiArray, MultiArrayDimension, MultiArrayLayout, Header
 import yaml
 import os
 from collections import OrderedDict
-from gmlaas.msg import CustomMsg, GraphMatcherMsg
+from gmlaas.msg import GraphBuilderMsg, GraphMatcherMsg
 
 #fake = rospy.get_param('~fake_arg')
 
@@ -27,9 +27,9 @@ class GraphMatcher:
         
         topic = "/graph_building/data"
         rospy.loginfo("...Using real data topic.")
-        self.m_adj_matrix_sub = rospy.Subscriber(topic,CustomMsg, self.callback,queue_size=10)
-
-        self.m_isomorphism_pub = rospy.Publisher("/graph_matching/data",GraphMatcherMsg, queue_size=10)
+        self.m_graph_builder_data_sub = rospy.Subscriber(topic,GraphBuilderMsg, self.callback,queue_size=10)
+        self.header = Header()
+        self.m_graph_matcher_data_pub = rospy.Publisher("/graph_matching/data",GraphMatcherMsg, queue_size=10)
 
         self.reference_adj_matrix = self.initReferenceAdjMatrix()
         rospy.loginfo("Graph matcher initialized.")   
@@ -66,22 +66,31 @@ class GraphMatcher:
         return self.reference_adj_matrix
     
     def listener(self, msg):
+        self.header = msg.header
         adjacency_matrix = msg.adjacency_matrix
         self.indexed_matrix = msg.indexed_matrix
         self.adjacency_matrix=self.buildMatrix(adjacency_matrix, len(self.indexed_matrix), len(self.indexed_matrix))
+        self.tags_id = msg.tags_id
+        self.coordinate_matrix = msg.coordinate_matrix
 
     def publisher(self):
         # Create a CustomMessage
         custom_msg = GraphMatcherMsg()
         custom_msg.header = self.header
         # Add adjacency matrix data
-        custom_msg.adjacency_matrix = [ float(value) for row in self.tree.calculate_adjacency_matrix() for value in row ]
+        custom_msg.adjacency_matrix = [ float(value) for row in self.adjacency_matrix for value in row ]
         # Add indexed matrix data
-        custom_msg.indexed_matrix = list(OrderedDict(self.tree.create_node_mapping()).keys())
+        custom_msg.indexed_matrix = self.indexed_matrix
         # Add isomorphism list data
         custom_msg.isomorphism_list = self.isomorphism_list
+        # Add tags id data
+        custom_msg.tags_id = self.tags_id
+        # Add coordinate matrix data
+        custom_msg.coordinate_matrix = self.coordinate_matrix
+
         # Publish the CustomMessage on the combined topic
-        self.publisher.publish(custom_msg)
+        self.m_graph_matcher_data_pub.publish(custom_msg)
+    
 
     def solvePygmMatching(self, input_adj_matrix, reference_adj_matrix):
         """
