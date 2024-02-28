@@ -10,6 +10,7 @@ from gmlaas.msg import PreHMsg
 class EstimateHMatrix:
     def __init__(self) :
         rospy.init_node("estimate_h_matrix",anonymous=False)
+        rospy.loginfo("Starting H computation...")
         self.m_points_sub = rospy.Subscriber("/h_computation/input_matrices",PreHMsg,self.callback)
         self.m_h_matrix_pub = rospy.Publisher("/h_computation/h_matrix",Float32MultiArray,queue_size=10)
         
@@ -18,9 +19,9 @@ class EstimateHMatrix:
         self.m_estimated_points = []
 
     def buildInputMatrices(self,msg):
-        current_coordinates = np.array(msg.current_coordinates).reshape(len(msg.current_coodinates)/3,3)
-        desired_coordinates = np.array(msg.desired_coordinates).reshape(len(msg.desired_coodinates)/3,3)
-        return current_coordinates,desired_coordinates
+        self.current_points = np.array(msg.current_coordinates).reshape(len(msg.current_coodinates)/3,3)
+        self.desired_points = np.array(msg.desired_coordinates).reshape(len(msg.desired_coodinates)/3,3)
+        
 
     def estimateRTMatrices(current_points, desired_points):
         """Estimates the pose (rotation and translation) that best aligns the current points to the desired points."""
@@ -94,7 +95,7 @@ class EstimateHMatrix:
         print(f"MAPE Positional Error (%): {mape_error}")
 
     def callback(self,msg):
-        self.m_current_points,self.m_desired_points = self.buildInputMatrices(msg) 
+        self.buildInputMatrices(msg) 
         rospy.loginfo("Input matrices received.")
         rospy.loginfo("Estimating pose...")
         R_est, T_est = self.estimateRTMatrices(self.m_current_points, self.m_desired_points)
