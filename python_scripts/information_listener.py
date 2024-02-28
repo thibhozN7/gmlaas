@@ -5,34 +5,40 @@ from gmlaas.msg import CustomMsg
 from apriltag_ros.msg import AprilTagDetectionArray
 from message_filters import Subscriber, TimeSynchronizer
 import datetime as dt
+import os
+#import time
 
-file1 = open("datasets/graph/graph_dataset.csv", "w")
-file2 = open("datasets/tags/tags_dataset.csv", "w")
+current_dir = os.path.realpath(__file__)
+package_dir = os.path.dirname(os.path.dirname(current_dir))
+
+file1 = open(f"{package_dir}/datasets/graph/graph_dataset.csv", "w")
+file2 = open(f"{package_dir}/datasets/tags/tags_dataset.csv", "w")
 
 datetime = dt.datetime.now()
 formatted_datetime = datetime.strftime("%Y-%m-%d %H:%M")
 
 #Headers
-file1.write("<TITLE : Graph Dataset (YYYY-MM-DD HH:MM): {formatted_datetime} >\n")
-file2.write("<TITLE : Tags Dataset (YYYY-MM-DD HH:MM): {formatted_datetime} >\n")
-file1.write("timestamp, date_time, number_of_tags, adjacency_matrix, indexed_matrix\n") 
-file2.write("timestamp, date_time, tag_id, x, y, z\n")
+file1.write(f"<TITLE : Graph Dataset (YYYY-MM-DD HH:MM): {formatted_datetime} >\n")
+file2.write(f"<TITLE : Tags Dataset (YYYY-MM-DD HH:MM): {formatted_datetime} >\n")
+file1.write("timestamp sec, timpestamp nsecs, number_of_tags, adjacency_matrix, indexed_matrix\n") 
+file2.write("timestamp, timpestamp nsecs, tag_id, x, y, z\n")
 
-
+# Control frequency settings
+#desired_rate = 1  # Desired acquisition frequency in Hz
 
 def callback(graph_data, tag_detections):
-    timestamp = graph_data.header.stamp
+    timestamp_secs = graph_data.header.stamp.secs #int
+    timestamp_nsecs = graph_data.header.stamp.nsecs #int
+
     adjacency_matrix = graph_data.adjacency_matrix
     indexed_matrix = graph_data.indexed_matrix
 
-    current_date_time = dt.datetime.fromtimestamp(timestamp)
-    current_date_time = current_date_time.strftime('%H:%M:%S:%f')[:-3]
-
     # Write data to file1
-    file1.write(f"{timestamp}, {current_date_time}, {len(tag_detections.detections)}, {adjacency_matrix}, {indexed_matrix}\n")
+    file1.write(f"{timestamp_secs}, {timestamp_nsecs}, {len(tag_detections.detections)}, {adjacency_matrix}, {indexed_matrix}\n")
 
     # Process the received data as needed
-    print(f"Received synchronized data at timestamp {timestamp}")
+    print(f"Received synchronized data at timestamp : {timestamp_secs}.{timestamp_nsecs}")
+    print(timestamp_nsecs)
     print("Adjacency Matrix:", adjacency_matrix)
     print("Indexed Matrix:", indexed_matrix)   
 
@@ -42,19 +48,34 @@ def callback(graph_data, tag_detections):
         x = detection.pose.pose.pose.position.x
         y = detection.pose.pose.pose.position.y
         z = detection.pose.pose.pose.position.z
-        print(f"Tag {tag_id} detected at coordinates ({x}, {y}, {z}) at timestamp {timestamp}")
+        print(f"Tag {tag_id} detected at coordinates ({x}, {y}, {z}) at timestamp : {timestamp_secs}.{timestamp_nsecs}")
 
         # Write data to file2
-        file2.write(f"{timestamp}, {current_date_time}, {tag_id}, {x}, {y}, {z}\n")
-        
+        file2.write(f"{timestamp_secs}, {timestamp_nsecs}, {tag_id}, {x}, {y}, {z}\n")
+    
+
+def register_callback(sync, callback):
+    try:
+        sync.registerCallback(callback)
+
+    except RuntimeError as e:
+        print(f"Error occurred during callback registration: {e}")
+
 
 if __name__ == "__main__":
 
     rospy.init_node("information_listener", anonymous=False)
-    
+
     # Use message_filters to synchronize messages from both topics based on timestamps
     graph_sub = Subscriber("/apriltag_to_graph_py/graph_builder_data", CustomMsg)
     tag_sub = Subscriber("/tag_detections", AprilTagDetectionArray)
-    sync = TimeSynchronizer([graph_sub, tag_sub], queue_size=10)
-    sync.registerCallback(callback)
+    sync = TimeSynchronizer([graph_sub, tag_sub], queue_size=1)
+
+    register_callback(sync, callback)
+    
     rospy.spin()
+
+    
+
+
+            
