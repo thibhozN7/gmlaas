@@ -1,0 +1,17 @@
+<launch>
+    <arg name="name_arg" default=""/>
+
+    <!-- Launch the realsense2_camera node -->
+    <include file="$(find realsense2_camera)/launch/rs_camera.launch" />
+
+    <!-- Launch the apriltag_ros continuous_detection node -->
+    <include file="$(find apriltag_ros)/launch/continuous_detection.launch" />
+
+    <!-- Run the apriltag_to_graph node -->
+    <node name="apriltag_to_graph" pkg="gmlaas" type="apriltag_to_graph.py" output="screen"/>
+
+    <!-- Run the information_listener node -->
+    <node name="information_listener" pkg="gmlaas" type="information_listener.py" output="screen"/>
+
+</launch>
+    

@@ -8,18 +8,36 @@ import datetime as dt
 import os
 #import time
 
+
 current_dir = os.path.realpath(__file__)
 package_dir = os.path.dirname(os.path.dirname(current_dir))
 
-file1 = open(f"{package_dir}/datasets/graph_dataset.csv", "w")
-file2 = open(f"{package_dir}/datasets/tags_dataset.csv", "w")
+try :
+    rospy.loginfo("Trying to get the name_arg parameter from the launch file...")
+    name_csvfile = rospy.get_param('~name_arg')
+except KeyError as e:
+    rospy.loginfo("Trying to get the name_arg parameter from the rosrun command line...")
+    argv = rospy.myargv()[1:]
+    print(argv)
+    print(len(argv))
+    if len(argv) == 1:
+        name_csvfile = argv[0]
+    else :
+        rospy.loginfo("... Please set the name_arg parameter in running the launch file : roslaunch gmlaas snapshot_listener.launch nam_arg:=\"csvNameFile\"") 
+        rospy.loginfo("or in running the rosrun command line : rosrun gmlaas snapshot_listener.py csvNameFile")
+        raise ValueError("Arg name_arg parameter not properly called.")
+
+
+file1 = open(f"{package_dir}/datasets/snapshots/{name_csvfile}_graph_dataset.csv", "w")
+file2 = open(f"{package_dir}/datasets/snapshots/{name_csvfile}_tags_dataset.csv", "w")
+
 
 datetime = dt.datetime.now()
 formatted_datetime = datetime.strftime("%Y-%m-%d %H:%M")
 
 #Headers
-file1.write(f"<TITLE : Graph Dataset (YYYY-MM-DD HH:MM): {formatted_datetime} >\n")
-file2.write(f"<TITLE : Tags Dataset (YYYY-MM-DD HH:MM): {formatted_datetime} >\n")
+file1.write(f"<TITLE : Snapshot of {name_csvfile}: Graph Dataset (YYYY-MM-DD HH:MM): {formatted_datetime} >\n")
+file2.write(f"<TITLE : Snapshot of {name_csvfile}: Tags Dataset (YYYY-MM-DD HH:MM): {formatted_datetime} >\n")
 file1.write("timestamp sec, timpestamp nsecs, number_of_tags, adjacency_matrix, indexed_matrix\n") 
 file2.write("timestamp, timpestamp nsecs, tag_id, x, y, z\n")
 
@@ -61,12 +79,12 @@ def register_callback(sync, callback):
         sync.registerCallback(callback)
 
     except RuntimeError as e:
-        print(f"Error occurred during callback registration: {e}")
+        rospy.loginfo(f"Error occurred during callback registration: {e}")
 
 
 if __name__ == "__main__":
 
-    rospy.init_node("information_listener", anonymous=False)
+    rospy.init_node("snapshot_listener", anonymous=False)
 
     # Use message_filters to synchronize messages from both topics based on timestamps
     graph_sub = Subscriber("graph_building/data", CustomMsg)
@@ -75,8 +93,7 @@ if __name__ == "__main__":
 
     register_callback(sync, callback)
     
-    rospy.spin()
-
+    #rospy.spinOnce()
     
 
 
