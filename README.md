@@ -18,10 +18,3 @@ avec debbuger gdb
  gdb ./graph_building//output/test
  ""
 
-datasets (folder)
-----other_datasets (files)
-----snapshots (folder)
---------reference_graph_dataset
---------reference_tags_dataset
---------desired_frame_graph_dataset
---------desired_frame_tags_dataset
