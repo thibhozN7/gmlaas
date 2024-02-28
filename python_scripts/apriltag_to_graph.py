@@ -5,7 +5,7 @@ import graph_builder
 from collections import OrderedDict
 from apriltag_ros.msg import AprilTagDetectionArray
 from std_msgs.msg import Float32MultiArray
-from std_msgs.msg import Int32MultiArray
+from std_msgs.msg import Int32MultiArray, Header
 from gmlaas.msg import CustomMsg
 
 class AprilTagToGraph:
@@ -17,6 +17,7 @@ class AprilTagToGraph:
         self.tree = graph_builder.Graph() 
         # Set to store existing edges
         self.existing_edges = []  
+        self.header = Header()
         rospy.init_node(nameNode, anonymous=False)
         rospy.Subscriber("/tag_detections", AprilTagDetectionArray, self.apriltag_listener_callback)
         #self.adjacency_matrix_publisher = rospy.Publisher("/graph_building/adjacency_matrix", Float32MultiArray, queue_size=10)
