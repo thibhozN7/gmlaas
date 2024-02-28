@@ -6,9 +6,20 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   sensor_msgs
+  message_generation
+  apriltag_ros
 )
 
-catkin_package()
+add_message_files(
+  FILES
+  CustomMsg.msg
+)
+generate_messages(
+   DEPENDENCIES
+   std_msgs  # Or other packages containing msgs
+ )
+ 
+catkin_package(CATKIN_DEPENDS message_runtime std_msgs)
 
 set(gmlaas_INCLUDE_DIR "include/gmlaas")
 set(gmlaas_SOURCE_DIR "src")

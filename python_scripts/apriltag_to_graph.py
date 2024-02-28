@@ -5,6 +5,7 @@ import graph_builder
 from apriltag_ros.msg import AprilTagDetectionArray
 from std_msgs.msg import Float32MultiArray
 from std_msgs.msg import Int32MultiArray
+from gmlaas.msg import CustomMsg
 
 class AprilTagToGraph:
 
@@ -19,7 +20,8 @@ class AprilTagToGraph:
         rospy.Subscriber("/tag_detections", AprilTagDetectionArray, self.apriltag_listener_callback)
         self.adjacency_matrix_publisher = rospy.Publisher("/graph_building/adjacency_matrix", Float32MultiArray, queue_size=10)
         self.index_matrix_publisher = rospy.Publisher("/graph_building/original_sequential_matrix", Int32MultiArray, queue_size=10)
-        
+        self.publisher = rospy.Publisher("/graph_building/data", CustomMsg, queue_size=10)
+
 
     def apriltag_listener_callback(self,data):
         #Set to store existing node IDs
@@ -60,13 +62,28 @@ class AprilTagToGraph:
                     self.tree.add_edge(edge)
                     edge.calculate_edge_length(self.tree)
                     self.existing_edges.append((from_node_id, to_node_id))
+        self.publisher_fnc()
         self.adjacency_publisher_fnc()
         self.index_publisher_fnc()
+
+    def publisher_fnc(self):
+        # Create a CustomMessage
+        custom_msg = CustomMsg()
+        custom_msg.header = self.header
+        # Add adjacency matrix data
+        custom_msg.adjacency_matrix = [ float(value) for row in self.tree.calculate_adjacency_matrix() for value in row ]
+        # Add indexed matrix data
+        custom_msg.indexed_matrix = list(OrderedDict(self.tree.create_node_mapping()).keys())
+
+        # Publish the CustomMessage on the combined topic
+        self.publisher.publish(custom_msg)
+
     def adjacency_publisher_fnc(self):
         self.adjacency_matrix = self.tree.calculate_adjacency_matrix()
 
         adjacency_matrix_msg = Float32MultiArray(data=sum(self.adjacency_matrix, []))
         self.adjacency_matrix_publisher.publish(adjacency_matrix_msg)
+
     def index_publisher_fnc(self):
         index_matrix = self.tree.create_node_mapping()
         
