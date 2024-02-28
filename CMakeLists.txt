@@ -14,6 +14,7 @@ add_message_files(
   FILES
   CustomMsg.msg
   PreHMsg.msg
+  GraphMatcherMsg.msg
 )
 generate_messages(
    DEPENDENCIES

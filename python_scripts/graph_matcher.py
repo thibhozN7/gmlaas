@@ -6,7 +6,8 @@ import functools
 from std_msgs.msg import Int32MultiArray,Float32MultiArray, MultiArrayDimension, MultiArrayLayout
 import yaml
 import os
-
+from collections import OrderedDict
+from gmlaas.msg import CustomMsg, GraphMatcherMsg
 
 fake = rospy.get_param('~fake_arg', 'True')
 
@@ -17,15 +18,15 @@ class GraphMatcher:
         rospy.loginfo("Starting graph matcher...")
 
         if fake:
-            topic = "/graph_building/fake/adjency_matrix"
-            rospy.loginfo("...Using fake adjency matrix topic.")
+            topic = "/graph_building/fake/adjacency_matrix"
+            rospy.loginfo("...Using fake adjacency matrix topic.")
         else:
-            topic = "/graph_building/adjency_matrix"
-            rospy.loginfo("...Using real adjency matrix topic.")
+            topic = "/graph_building/data"
+            rospy.loginfo("...Using real data topic.")
         
-        self.m_adj_matrix_sub = rospy.Subscriber(topic,Float32MultiArray, self.callback,queue_size=10)
+        self.m_adj_matrix_sub = rospy.Subscriber(topic,CustomMsg, self.callback,queue_size=10)
 
-        self.m_isomorphism_pub = rospy.Publisher("/graph_matching/isomorphism_list",Float32MultiArray, queue_size=10)
+        self.m_isomorphism_pub = rospy.Publisher("/graph_matching/data",GraphMatcherMsg, queue_size=10)
 
         self.reference_adj_matrix = self.initReferenceAdjMatrix()
         rospy.loginfo("Graph matcher initialized.")   
@@ -61,8 +62,25 @@ class GraphMatcher:
         rospy.loginfo(self.reference_adj_matrix)
         return self.reference_adj_matrix
     
-    
-    def solvePygmMatching(self, current_adj_matrix, reference_adj_matrix):
+    def listener(self, msg):
+        adjacency_matrix = msg.adjacency_matrix
+        self.indexed_matrix = msg.indexed_matrix
+        self.adjacency_matrix=self.buildMatrix(adjacency_matrix, len(self.indexed_matrix), len(self.indexed_matrix))
+
+    def publisher(self):
+        # Create a CustomMessage
+        custom_msg = GraphMatcherMsg()
+        custom_msg.header = self.header
+        # Add adjacency matrix data
+        custom_msg.adjacency_matrix = [ float(value) for row in self.tree.calculate_adjacency_matrix() for value in row ]
+        # Add indexed matrix data
+        custom_msg.indexed_matrix = list(OrderedDict(self.tree.create_node_mapping()).keys())
+        # Add isomorphism list data
+        custom_msg.isomorphism_list = self.isomorphism_list
+        # Publish the CustomMessage on the combined topic
+        self.publisher.publish(custom_msg)
+
+    def solvePygmMatching(self, input_adj_matrix, reference_adj_matrix):
         """
         Compute the optimal matching between two graphs.
         
@@ -105,33 +123,26 @@ class GraphMatcher:
         return relationships_data
 
 
-    def publishHMatrix(self,data):        
-        h_matrix_msg = Float32MultiArray()
-
-        self.m_h_matrix_pub.publish(data)
-    
+    def buildIsomorphismList(self, isomorphism_data):
+        isomorphism_list = list(isomorphism_data)
+        return isomorphism_list
     
     def callback(self, msg):
-        data = msg.data
-        rows = msg.layout.dim[0].size
-        cols = msg.layout.dim[1].size
-        rospy.loginfo(f"Adjacency matrix {rows}x{cols} received...")
-
-        adj_matrix = self.buildMatrix(data, rows, cols)
-        rospy.loginfo(f".... : \n{adj_matrix}")
+        self.listener()
+        rospy.loginfo(f"Adjacency matrix {self.adjacency_matrix.shape[0]}x{self.adjacency_matrix.shape[1]} received...")
 
         rospy.loginfo("Solving graph matching...")
-        K, X = self.solvePygmMatching(adj_matrix, self.reference_adj_matrix)
+        K, X = self.solvePygmMatching(self.adjacency_matrix, self.reference_adj_matrix)
         rospy.loginfo(f"...done \nMatching matrix: \n{X}")
         
         rospy.loginfo("Computing relationships...")
-        relationships_data = self.computeRelationships(X)
-        relationships_msg = self.buildMessage(relationships_data)
+        isomorphism_data = self.computeRelationships(X)
+        self.isomorphism_list = self.buildIsomorphismList(isomorphism_data)
         rospy.loginfo(f"...done")
 
         rospy.loginfo("Publishing relationships...")
-        self.m_isomorphism_pub.publish(relationships_msg)
-        rospy.loginfo(f"...Published:\n {relationships_msg}")
+        self.publisher()
+        rospy.loginfo(f"...Published:\n {self.isomorphism_list}")
 
 if __name__ == "__main__":
     matcher = GraphMatcher(fake)
