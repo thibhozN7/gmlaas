@@ -7,7 +7,7 @@ from std_msgs.msg import Int32MultiArray,Float32MultiArray, MultiArrayDimension,
 import yaml
 import os
 from collections import OrderedDict
-from gmlaas.msg import CustomMsg, GraphMatcherMsg
+from gmlaas.msg import GraphBuilderMsg, GraphMatcherMsg
 
 #fake = rospy.get_param('~fake_arg')
 
@@ -27,7 +27,7 @@ class GraphMatcher:
         
         topic = "/graph_building/data"
         rospy.loginfo("...Using real data topic.")
-        self.m_graph_builder_data_sub = rospy.Subscriber(topic,CustomMsg, self.callback,queue_size=10)
+        self.m_graph_builder_data_sub = rospy.Subscriber(topic,GraphBuilderMsg, self.callback,queue_size=10)
         self.header = Header()
         self.m_graph_matcher_data_pub = rospy.Publisher("/graph_matching/data",GraphMatcherMsg, queue_size=10)
 
@@ -70,6 +70,8 @@ class GraphMatcher:
         adjacency_matrix = msg.adjacency_matrix
         self.indexed_matrix = msg.indexed_matrix
         self.adjacency_matrix=self.buildMatrix(adjacency_matrix, len(self.indexed_matrix), len(self.indexed_matrix))
+        self.tags_id = msg.tags_id
+        self.coordinate_matrix = msg.coordinate_matrix
 
     def publisher(self):
         # Create a CustomMessage
@@ -81,8 +83,14 @@ class GraphMatcher:
         custom_msg.indexed_matrix = self.indexed_matrix
         # Add isomorphism list data
         custom_msg.isomorphism_list = self.isomorphism_list
+        # Add tags id data
+        custom_msg.tags_id = self.tags_id
+        # Add coordinate matrix data
+        custom_msg.coordinate_matrix = self.coordinate_matrix
+
         # Publish the CustomMessage on the combined topic
         self.m_graph_matcher_data_pub.publish(custom_msg)
+    
 
     def solvePygmMatching(self, input_adj_matrix, reference_adj_matrix):
         """
