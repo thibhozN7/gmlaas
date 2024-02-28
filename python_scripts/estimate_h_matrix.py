@@ -5,48 +5,54 @@ from std_msgs.msg import Float32MultiArray, MultiArrayDimension
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.mplot3d import Axes3D
-
+from gmlaas.msg import PreHMsg
 
 class EstimateHMatrix:
     def __init__(self) :
         rospy.init_node("estimate_h_matrix",anonymous=False)
-        self.m_points_sub = rospy.Subscriber("/??",Float32MultiArray,self.callback_)
-        self.m_targets_points_sub = rospy.Subscriber("/??",Float32MultiArray,self.callback_target)
-        self.m_h_matrix_pub = rospy.Publisher("/graph/h_matrix",Float32MultiArray,queue_size=10)
+        self.m_points_sub = rospy.Subscriber("/h_computation/input_matrices",PreHMsg,self.callback)
+        self.m_h_matrix_pub = rospy.Publisher("/h_computation/h_matrix",Float32MultiArray,queue_size=10)
+        self.m_current_points = []
+        self.m_desired_points = []
+        self.m_estimated_points = []
 
+    def buildInputMatrices(self,msg):
+        current_coordinates = np.array(msg.current_coordinates).reshape(len(msg.current_coodinates)/3,3)
+        desired_coordinates = np.array(msg.desired_coordinates).reshape(len(msg.desired_coodinates)/3,3)
+        return current_coordinates,desired_coordinates
 
     def applyTransformation(points, R, T):
         """Apply rotation and translation to the points."""
         transform = np.dot(points, R.T) + T
         return transform
 
-    def estimateHMatrix(source_points, target_points):
-        """Estimates the pose (rotation and translation) that best aligns the source points to the target points."""
-        centroid_source = np.mean(source_points, axis=0)
-        centroid_target = np.mean(target_points, axis=0)
-        centered_source = source_points - centroid_source
-        centered_target = target_points - centroid_target
-        H = np.dot(centered_source.T, centered_target)
+    def estimateHMatrix(current_points, desired_points):
+        """Estimates the pose (rotation and translation) that best aligns the current points to the desired points."""
+        centroid_current = np.mean(current_points, axis=0)
+        centroid_desired = np.mean(desired_points, axis=0)
+        centered_current = current_points - centroid_current
+        centered_desired = desired_points - centroid_desired
+        H = np.dot(centered_current.T, centered_desired)
         U, S, Vt = np.linalg.svd(H)
         R = np.dot(Vt.T, U.T)
         if np.linalg.det(R) < 0:
             Vt[2, :] *= -1
             R = np.dot(Vt.T, U.T)
-        T = centroid_target.T - np.dot(R, centroid_source.T)
+        T = centroid_desired.T - np.dot(R, centroid_current.T)
         return R, T
 
-    def visualizePoints(source, target, estimated):
-        """Visualize the source, target, and estimated points in a 3D plot."""
+    def visualizePoints(current, desired, estimated):
+        """Visualize the current, desired, and estimated points in a 3D plot."""
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
 
-        ax.scatter(source[:, 0], source[:, 1], source[:, 2], c='r', label='Source')
-        ax.scatter(target[:, 0], target[:, 1], target[:, 2], c='g', label='Target')
+        ax.scatter(current[:, 0], current[:, 1], current[:, 2], c='r', label='current')
+        ax.scatter(desired[:, 0], desired[:, 1], desired[:, 2], c='g', label='desired')
         ax.scatter(estimated[:, 0], estimated[:, 1], estimated[:, 2], c='b', label='Estimated')
 
-        # Plotting the link between source and target points
-        for i in range(len(source)):
-            ax.plot([source[i, 0], target[i, 0]], [source[i, 1], target[i, 1]], [source[i, 2], target[i, 2]], c='k')
+        # Plotting the link between current and desired points
+        for i in range(len(current)):
+            ax.plot([current[i, 0], desired[i, 0]], [current[i, 1], desired[i, 1]], [current[i, 2], desired[i, 2]], c='k')
 
         ax.set_xlabel('X')
         ax.set_ylabel('Y')
@@ -55,23 +61,24 @@ class EstimateHMatrix:
         plt.show()
 
 
-    def visualizeError(target, estimated):
-        """Visualize the error between the target and estimated points."""
-        error = np.linalg.norm(target - estimated, axis=1)
+    def visualizeError(desired, estimated):
+        """Visualize the error between the desired and estimated points."""
+        error = np.linalg.norm(desired - estimated, axis=1)
         max_error = np.max(error)
         min_error = np.min(error)
         mae_error = np.mean(error)
-        mape_error = np.mean(np.abs(np.divide((target - estimated),target)))*100
+        mape_error = np.mean(np.abs(np.divide((desired - estimated),desired)))*100
         print(f"Max Positional Error: {max_error}")
         print(f"Min Positional Error: {min_error}")
         print(f"MAE Positional Error: {mae_error}")
         print(f"MAPE Positional Error (%): {mape_error}")
 
-    def callback(self,points,target_points):
-        R_est, T_est = EstimateHMatrix(points, target_points)
-        estimated_points = self.applyTransformation(points, R_est, T_est)
-        self.visualizePoints(points, target_points, estimated_points)
-        self.visualizeError(target_points, estimated_points)
+    def callback(self,msg):
+        self.m_current_points,self.m_desired_points = self.buildInputMatrices(msg) 
+        R_est, T_est = self.estimateHMatrix(self.m_current_points, self.m_desired_points)
+        self.m_estimated_points = self.applyTransformation(self.m_current_points, R_est, T_est)
+        self.visualizePoints(self.m_current_points, self.m_desired_points, self.m_estimated_points)
+        self.visualizeError(self.m_desired_points, self.m_estimated_points)
     
 if __name__ == "__main__":
     estimate_h_matrix=EstimateHMatrix()
