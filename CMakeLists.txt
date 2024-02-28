@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
 add_message_files(
   FILES
   GraphBuilderMsg.msg
+  PreHMsg.msg
   GraphMatcherMsg.msg
 )
 generate_messages(
