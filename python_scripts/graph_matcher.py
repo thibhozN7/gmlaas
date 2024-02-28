@@ -9,22 +9,24 @@ import os
 from collections import OrderedDict
 from gmlaas.msg import CustomMsg, GraphMatcherMsg
 
-fake = rospy.get_param('~fake_arg', 'False')
+#fake = rospy.get_param('~fake_arg')
 
 class GraphMatcher:
     def __init__(self):
 
         rospy.init_node("graph_matcher_py", anonymous=False)        
         rospy.loginfo("Starting graph matcher...")
-        self.fake = fake
+        #self.fake = fake
 
-        if self.fake:
-            topic = "/graph_building/fake/adjacency_matrix"
-            rospy.loginfo("...Using fake adjacency matrix topic.")
-        else:
-            topic = "/graph_building/data"
-            rospy.loginfo("...Using real data topic.")
+        # if self.fake:
+        #     topic = "/graph_building/fake/adjacency_matrix"
+        #     rospy.loginfo("...Using fake adjacency matrix topic.")
+        # else:
+        #     topic = "/graph_building/data"
+        #     rospy.loginfo("...Using real data topic.")
         
+        topic = "/graph_building/data"
+        rospy.loginfo("...Using real data topic.")
         self.m_adj_matrix_sub = rospy.Subscriber(topic,CustomMsg, self.callback,queue_size=10)
 
         self.m_isomorphism_pub = rospy.Publisher("/graph_matching/data",GraphMatcherMsg, queue_size=10)
@@ -129,7 +131,7 @@ class GraphMatcher:
         return isomorphism_list
     
     def callback(self, msg):
-        self.listener()
+        self.listener(msg)
         rospy.loginfo(f"Adjacency matrix {self.adjacency_matrix.shape[0]}x{self.adjacency_matrix.shape[1]} received...")
 
         rospy.loginfo("Solving graph matching...")

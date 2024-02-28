@@ -1,5 +1,5 @@
 <launch>
-    <arg name="fake_arg"         default="false"/>
+    <arg name="fake_arg"         default="true"/>
 
     <!-- Launch graph_builder_node with fake=true -->
     <group if="$(arg fake_arg)">
