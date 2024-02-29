@@ -6,7 +6,7 @@ from apriltag_ros.msg import AprilTagDetectionArray
 from message_filters import Subscriber, TimeSynchronizer
 import datetime as dt
 import os
-#import time
+import time
 
 
 current_dir = os.path.realpath(__file__)
@@ -96,7 +96,7 @@ if __name__ == "__main__":
     print("timer starts now")
     for c in range(5):
         print(5-c)
-        rospy.sleep(1)
+        time.sleep(1)
     print("timer ends now")
     
     sync = TimeSynchronizer([graph_sub, tag_sub], queue_size=10)

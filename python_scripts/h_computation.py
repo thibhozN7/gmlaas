@@ -7,6 +7,7 @@ import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.mplot3d import Axes3D
 from gmlaas.msg import PreHMsg
+import time
 
 class EstimateHMatrix:
     def __init__(self) :
@@ -19,7 +20,8 @@ class EstimateHMatrix:
     def buildInputMatrices(self,msg):
         self.current_points = np.array(msg.current_coordinates).reshape(int(len(msg.current_coordinates)/3),3)
         self.desired_points = np.array(msg.desired_coordinates).reshape(int(len(msg.desired_coordinates)/3),3)
-        
+        print(f'msg.current_coordinates: {msg.current_coordinates}')
+        print(f"Current points: {self.current_points}")
 
     def estimateRTMatrices(self):
         """Estimates the pose (rotation and translation) that best aligns the current points to the desired points."""
@@ -98,14 +100,18 @@ class EstimateHMatrix:
 
     def callback(self,msg):
         self.buildInputMatrices(msg) 
-        rospy.loginfo("Input matrices received.")
-        rospy.loginfo("Estimating pose...")
+        #rospy.loginfo("Input matrices received.")
+        #rospy.loginfo("Estimating pose...")
         R_est, T_est = self.estimateRTMatrices()
-        rospy.loginfo("Pose estimation completed.")
-        rospy.loginfo("Building H matrix...")
+        #print(f"T = {T_est}")
+        print(f"R = {R_est}")
+        #print("-------------")
+        #time.sleep(2)
+        #rospy.loginfo("Pose estimation completed.")
+        #rospy.loginfo("Building H matrix...")
         H = self.buildHmatrix(R_est, T_est)
         self.publishMatrix(H)
-        rospy.loginfo("H matrix published.")
+        #rospy.loginfo("H matrix published.")
         
         #visualize the points and the error
         self.estimated_points = self.applyTransformation( R_est, T_est)
