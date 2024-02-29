@@ -3,31 +3,35 @@ import rospy
 import numpy as np
 import pygmtools as pygm
 import functools
-from std_msgs.msg import Float32MultiArray, MultiArrayDimension, MultiArrayLayout
-import yaml
+from std_msgs.msg import Int32MultiArray,Float32MultiArray, MultiArrayDimension, MultiArrayLayout, Header
+import csv
 import os
-
-
-fake = rospy.get_param('~fake_arg', 'True')
+from collections import OrderedDict
+from gmlaas.msg import GraphBuilderMsg, GraphMatcherMsg
+#gitfuck
+#fake = rospy.get_param('~fake_arg')
 
 class GraphMatcher:
-    def __init__(self, fake = True):
+    def __init__(self):
 
         rospy.init_node("graph_matcher_py", anonymous=False)        
         rospy.loginfo("Starting graph matcher...")
+        #self.fake = fake
 
-        if fake:
-            topic = "/graph_building/fake/adjency_matrix"
-            rospy.loginfo("...Using fake adjency matrix topic.")
-        else:
-            topic = "/graph_building/adjency_matrix"
-            rospy.loginfo("...Using real adjency matrix topic.")
+        # if self.fake:
+        #     topic = "/graph_building/fake/adjacency_matrix"
+        #     rospy.loginfo("...Using fake adjacency matrix topic.")
+        # else:
+        #     topic = "/graph_building/data"
+        #     rospy.loginfo("...Using real data topic.")
         
-        self.m_adj_matrix_sub = rospy.Subscriber(topic,Float32MultiArray, self.callback,queue_size=10)
+        topic = "/graph_building/data"
+        rospy.loginfo("...Using real data topic.")
+        self.m_graph_builder_data_sub = rospy.Subscriber(topic,GraphBuilderMsg, self.callback,queue_size=10)
+        self.header = Header()
+        self.m_graph_matcher_data_pub = rospy.Publisher("/graph_matching/data",GraphMatcherMsg, queue_size=10)
 
-        self.m_isomorphism_pub = rospy.Publisher("/graph_matching/isomorphism_list",Float32MultiArray, queue_size=10)
-
-        self.reference_adj_matrix = self.initReferenceAdjMatrix()
+        self.reference_adjacency_matrix = self.initReferenceAdjMatrix()
         rospy.loginfo("Graph matcher initialized.")   
     
     def buildMatrix(self, data, rows, cols):
@@ -37,52 +41,73 @@ class GraphMatcher:
     def initReferenceAdjMatrix(self):
 
         package_path = os.path.dirname(os.path.dirname(__file__))  # Get the directory of the ROS package (two levels up from the script file)
-        file_path = os.path.join(package_path, "text_files", "reference_adjacency_matrix.txt")
+        csv_name = "reference_graph_dataset.csv"
+        file_path = os.path.join(package_path, "datasets/snapshots", csv_name )
         
         # Open the file in read mode
-        with open(file_path, 'r') as file:
-            # Read the contents of the file into a variable
-            text = file.read()
-        # Parse the YAML text
-        parsed_data = yaml.safe_load(text)
-        data = parsed_data['data']
-        layout_dim = parsed_data['layout']['dim']
-
-        # Create the layout dimensions
-        layout = MultiArrayLayout()
-        layout.dim = [MultiArrayDimension(label=dim['label'], size=dim['size'], stride=dim['stride']) for dim in layout_dim]
-        layout.data_offset = parsed_data['layout']['data_offset']
-
-        # Create a Float32MultiArray message
-        reference_msg = Float32MultiArray(layout=layout, data=data)
-        self.reference_adj_matrix = self.buildMatrix(reference_msg.data, layout_dim[0]['size'], layout_dim[1]['size'])
+        with open(file_path, 'r',) as file:
+            reader = csv.reader(file, delimiter=';')
+            next(reader),next(reader)  # Skip the title and header row
+            for row in reader:
+                reference_adjacency_matrix = [float(x) for x in row[3].replace("(","").replace(")","").split(", ")]
+                print(reference_adjacency_matrix)
+                print(type(reference_adjacency_matrix))
+                size=int(row[2])
+        rospy.loginfo("Reference index matrix obtained.")
         
+        self.reference_adjacency_matrix = self.buildMatrix(reference_adjacency_matrix, size, size)
         rospy.loginfo("Reference adjacency matrix:")
-        rospy.loginfo(self.reference_adj_matrix)
-        return self.reference_adj_matrix
+        rospy.loginfo(self.reference_adjacency_matrix)
+        return self.reference_adjacency_matrix
     
+    def listener(self, msg):
+        self.header = msg.header
+        adjacency_matrix = msg.adjacency_matrix
+        self.indexed_matrix = msg.indexed_matrix
+        self.current_adjacency_matrix=self.buildMatrix(adjacency_matrix, len(self.indexed_matrix), len(self.indexed_matrix))
+        self.tags_id = msg.tags_id
+        self.coordinate_matrix = msg.coordinate_matrix
+
+    def publisher(self):
+        # Create a CustomMessage
+        custom_msg = GraphMatcherMsg()
+        custom_msg.header = self.header
+        # Add adjacency matrix data
+        custom_msg.adjacency_matrix = [ float(value) for row in self.current_adjacency_matrix for value in row ]
+        # Add indexed matrix data
+        custom_msg.indexed_matrix = self.indexed_matrix
+        # Add isomorphism list data
+        custom_msg.isomorphism_list = self.isomorphism_list
+        # Add tags id data
+        custom_msg.tags_id = self.tags_id
+        # Add coordinate matrix data
+        custom_msg.coordinate_matrix = self.coordinate_matrix
+
+        # Publish the CustomMessage on the combined topic
+        self.m_graph_matcher_data_pub.publish(custom_msg)
     
-    def solvePygmMatching(self, input_adj_matrix, reference_adj_matrix):
+
+    def solvePygmMatching(self):
         """
         Compute the optimal matching between two graphs.
         
         Args:
-            input_adj_matrix (numpy.ndarray): Adjacency matrix of the input graph.
-            reference_adj_matrix (numpy.ndarray): Adjacency matrix of reference graph.
+            current_adj_matrix (numpy.ndarray): Adjacency matrix of the current graph.
+            reference_adjacency_matrix (numpy.ndarray): Adjacency matrix of reference graph.
         Returns:
             K (numpy.ndarray): Affinity matrix.
-            X (numpy.ndarray): Matching matrix => X[i, j] is the probability that node i in the input graph is matched to node j in the reference graph.
+            X (numpy.ndarray): Matching matrix => X[i, j] is the probability that node i in the current graph is matched to node j in the reference graph.
         """
         pygm.set_backend('numpy')
         np.random.seed(1)
 
-        print(input_adj_matrix.shape)
-        print(reference_adj_matrix.shape)
+        print(self.current_adjacency_matrix.shape)
+        print(self.reference_adjacency_matrix.shape)
 
-        n1 = np.array(input_adj_matrix.shape)
-        n2 = np.array(reference_adj_matrix.shape)
-        conn1, edge1 = pygm.utils.dense_to_sparse(input_adj_matrix)
-        conn2, edge2 = pygm.utils.dense_to_sparse(reference_adj_matrix)
+        n1 = np.array(self.current_adjacency_matrix.shape)
+        n2 = np.array(self.reference_adjacency_matrix.shape)
+        conn1, edge1 = pygm.utils.dense_to_sparse(self.current_adjacency_matrix)
+        conn2, edge2 = pygm.utils.dense_to_sparse(self.reference_adjacency_matrix)
 
         gaussian_aff = functools.partial(pygm.utils.gaussian_aff_fn, sigma=.1)
         K = pygm.utils.build_aff_mat(None, edge1, conn1, None, edge2, conn2, None, None, None, None, edge_aff_fn=gaussian_aff)
@@ -91,12 +116,12 @@ class GraphMatcher:
     
     def computeRelationships(self, X):
         """
-        Compute the relationships between the nodes of the input and reference graphs.
+        Compute the relationships between the nodes of the current and reference graphs.
         
         Args:
-            X (numpy.ndarray): Matching matrix => X[i, j] is the probability that node i in the input graph is matched to node j in the reference graph.
+            X (numpy.ndarray): Matching matrix => X[i, j] is the probability that node i in the current graph is matched to node j in the reference graph.
         Returns:
-            relationships_data (list): List of relationships between the nodes of the input and reference graphs.
+            relationships_data (list): List of relationships between the nodes of the current and reference graphs.
         """
         relationships_data = []
         max_idx = np.argmax(X, axis=1)
@@ -105,35 +130,29 @@ class GraphMatcher:
         return relationships_data
 
 
-    def buildMessage(self, relationships_data):
-        relationships_msg = Float32MultiArray()
-        relationships_msg.data = list(relationships_data)
-        return relationships_msg
+    def buildIsomorphismList(self, isomorphism_data):
+        isomorphism_list = list(isomorphism_data)
+        return isomorphism_list
     
     def callback(self, msg):
-        data = msg.data
-        rows = msg.layout.dim[0].size
-        cols = msg.layout.dim[1].size
-        rospy.loginfo(f"Adjacency matrix {rows}x{cols} received...")
-
-        adj_matrix = self.buildMatrix(data, rows, cols)
-        rospy.loginfo(f".... : \n{adj_matrix}")
+        self.listener(msg)
+        rospy.loginfo(f"Adjacency matrix {self.current_adjacency_matrix.shape[0]}x{self.current_adjacency_matrix.shape[1]} received...")
 
         rospy.loginfo("Solving graph matching...")
-        K, X = self.solvePygmMatching(adj_matrix, self.reference_adj_matrix)
+        K, X = self.solvePygmMatching()
         rospy.loginfo(f"...done \nMatching matrix: \n{X}")
         
         rospy.loginfo("Computing relationships...")
-        relationships_data = self.computeRelationships(X)
-        relationships_msg = self.buildMessage(relationships_data)
+        isomorphism_data = self.computeRelationships(X)
+        self.isomorphism_list = self.buildIsomorphismList(isomorphism_data)
         rospy.loginfo(f"...done")
 
         rospy.loginfo("Publishing relationships...")
-        self.m_isomorphism_pub.publish(relationships_msg)
-        rospy.loginfo(f"...Published:\n {relationships_msg}")
+        self.publisher()
+        rospy.loginfo(f"...Published:\n {self.isomorphism_list}")
 
 if __name__ == "__main__":
-    matcher = GraphMatcher(fake)
+    matcher = GraphMatcher()
     rospy.spin()
 
         
