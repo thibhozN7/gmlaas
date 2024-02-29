@@ -40,23 +40,26 @@ class PreHMatrix:
     def buildReferenceIndexMatrix(self):
         # Read the reference index matrix from the reference tags dataset
         with open(f"{package_dir}/datasets/snapshots/reference_graph_dataset.csv", "r") as file:
-            reader = csv.reader(file)
+            reader = csv.reader(file, delimiter=';')
             next(reader)  # Skip the header row
+            next(reader)
             for row in reader:
-                self.m_reference_index_matrix = [float(x) for x in row[4].replace("(","").replace(")","").split(", ")]
+                self.m_reference_index_matrix = [float(x) for x in row[4].replace("(","").replace(")","").split(",")]
+                print(self.m_reference_index_matrix)
         rospy.loginfo("Reference index matrix obtained.")
 
     def reshapeCurrentGraphData(self, msg):
         # Store the timestamp, adjacency matrix, and indexed matrix from the graph data
-        self.current_indexed_matrix = msg.indexed_matrix
-        self.current_tags_id = msg.tags_id 
-        self.isomorphism_list =msg.isomorphism_list
+        self.current_indexed_matrix = list(msg.indexed_matrix)
+        self.current_tags_id = list(msg.tags_id)
+        self.isomorphism_list = list(map(int,list(msg.isomorphism_list)))
         self.current_coordinates = np.reshape(msg.coordinate_matrix,(len(self.current_tags_id),3))
         rospy.loginfo("Current graph data reshaped.")
     
     def buildCurrentTagDict(self):
         # Store the current tag coordinates from the tag detections
-        for i in self.current_tags_id:
+        print(self.current_tags_id)
+        for i in range(len(self.current_tags_id)-1):
             tag_id = self.current_tags_id[i]
             self.m_current_dict[tag_id] = self.current_coordinates[i]
         rospy.loginfo("Current tag dictionary built.")
@@ -64,9 +67,11 @@ class PreHMatrix:
     def buildDesiredTagDict(self):
         # Build dictionaries for desired tag coordinates
         with open(f"{package_dir}/datasets/snapshots/desired_frame_tags_dataset.csv", "r") as file:
-            reader = csv.reader(file)
+            reader = csv.reader(file, delimiter=';')
             next(reader)  # Skip the header row
+            next(reader)
             for row in reader:
+                print(len(row))
                 tag_id = int(row[2])
                 x = float(row[3])
                 y = float(row[4])

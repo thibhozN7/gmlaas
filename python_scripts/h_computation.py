@@ -15,21 +15,18 @@ class EstimateHMatrix:
         self.m_points_sub = rospy.Subscriber("/h_computation/input_matrices",PreHMsg,self.callback)
         self.m_h_matrix_pub = rospy.Publisher("/h_computation/h_matrix",Float32MultiArray,queue_size=10)
         
-        self.m_current_points = []
-        self.m_desired_points = []
-        self.m_estimated_points = []
 
     def buildInputMatrices(self,msg):
-        self.current_points = np.array(msg.current_coordinates).reshape(len(msg.current_coodinates)/3,3)
-        self.desired_points = np.array(msg.desired_coordinates).reshape(len(msg.desired_coodinates)/3,3)
+        self.current_points = np.array(msg.current_coordinates).reshape(int(len(msg.current_coordinates)/3),3)
+        self.desired_points = np.array(msg.desired_coordinates).reshape(int(len(msg.desired_coordinates)/3),3)
         
 
-    def estimateRTMatrices(current_points, desired_points):
+    def estimateRTMatrices(self):
         """Estimates the pose (rotation and translation) that best aligns the current points to the desired points."""
-        centroid_current = np.mean(current_points, axis=0)
-        centroid_desired = np.mean(desired_points, axis=0)
-        centered_current = current_points - centroid_current
-        centered_desired = desired_points - centroid_desired
+        centroid_current = np.mean(self.current_points, axis=0)
+        centroid_desired = np.mean(self.desired_points, axis=0)
+        centered_current = self.current_points - centroid_current
+        centered_desired = self.desired_points - centroid_desired
         H = np.dot(centered_current.T, centered_desired)
         U, S, Vt = np.linalg.svd(H)
         R = np.dot(Vt.T, U.T)
@@ -54,18 +51,22 @@ class EstimateHMatrix:
     def publishMatrix(self,H):
         # Publish the current and desired coordinates as a PreHMsg message
         h_matrix_msg = Float32MultiArray()
-        h_matrix_msg.data = list(H).flatten()
+        h_matrix_msg.data = H.flatten()
         self.m_h_matrix_pub.publish(h_matrix_msg)
 
 
     #Visualize functions
-    def applyTransformation(points, R, T):
+    def applyTransformation(self,R, T):
         """Apply rotation and translation to the points."""
-        transform = np.dot(points, R.T) + T
+        transform = np.dot(self.current_points, R.T) + T
         return transform
 
-    def visualizePoints(current, desired, estimated):
+    def visualizePoints(self):
         """Visualize the current, desired, and estimated points in a 3D plot."""
+        current = np.array(self.current_points)
+        desired = np.array(self.desired_points)
+        estimated = np.array(self.estimated_points)
+        
         fig = plt.figure()
         ax = fig.add_subplot(111, projection='3d')
 
@@ -99,7 +100,7 @@ class EstimateHMatrix:
         self.buildInputMatrices(msg) 
         rospy.loginfo("Input matrices received.")
         rospy.loginfo("Estimating pose...")
-        R_est, T_est = self.estimateRTMatrices(self.m_current_points, self.m_desired_points)
+        R_est, T_est = self.estimateRTMatrices()
         rospy.loginfo("Pose estimation completed.")
         rospy.loginfo("Building H matrix...")
         H = self.buildHmatrix(R_est, T_est)
@@ -107,9 +108,9 @@ class EstimateHMatrix:
         rospy.loginfo("H matrix published.")
         
         #visualize the points and the error
-        # self.m_estimated_points = self.applyTransformation(self.m_current_points, R_est, T_est)
-        # self.visualizePoints(self.m_current_points, self.m_desired_points, self.m_estimated_points)
-        # self.visualizeError(self.m_desired_points, self.m_estimated_points)
+        self.estimated_points = self.applyTransformation( R_est, T_est)
+        #self.visualizePoints()
+        #self.visualizeError(self.m_desired_points, self.m_estimated_points)
         
     
 if __name__ == "__main__":
