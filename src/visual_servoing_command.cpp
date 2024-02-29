@@ -31,17 +31,6 @@ void VisualServoingCommand::init(){
     //CURRENT : the interaction matrix is computed using the current visual features
     m_task.setInteractionMatrixType(vpServo::CURRENT);
 
-    ros::param::get("adaptative_gain_value", m_adaptative_gain);
-    ros::param::get("lambda_gain_value",  m_lambda_gain);
-    ros::param::get("vs_type",  m_vs_type);
-    ros::param::get("visp_publisher_value",  m_visp_publisher);
-
-    ros::param::get("x_gain_value",  m_x_gain);
-    ros::param::get("y_gain_value",  m_y_gain);
-    ros::param::get("z_gain_value",  m_z_gain);
-    ros::param::get("rx_gain_value",  m_rx_gain);
-    ros::param::get("ry_gain_value",  m_ry_gain);
-    ros::param::get("rz_gain_value",  m_rz_gain);
 
 
     if(m_vs_type == "pbvs"){
