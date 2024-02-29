@@ -51,7 +51,13 @@
   
   <build_depend>message_generation</build_depend>
   <exec_depend>message_runtime</exec_depend>
+
+  <build_depend>geometry_msgs</build_depend>
+  <exec_depend>geometry_msgs</exec_depend>
   
+  <build_depend>cv_bridge</build_depend>
+  <exec_depend>cv_bridge</exec_depend>
+
   <buildtool_depend>catkin</buildtool_depend>
   <build_depend>apriltag_ros</build_depend>
   <build_depend>roscpp</build_depend>

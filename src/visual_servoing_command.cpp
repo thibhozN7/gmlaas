@@ -45,7 +45,7 @@ void VisualServoingCommand::init(){
 
 
     if(m_vs_type == "pbvs"){
-        m_points_sub = m_node.subscribe("/camera_frame/point_cloud_detection/icp_homo_matrix", 1,
+        m_points_sub = m_node.subscribe("/h_computation/h_matrix", 1,
                                          &VisualServoingCommand::computeCommandCallbackPbvs, this);
         // m_points_sub = vpROSRobot::n->subscribe("/camera_frame/point_cloud_detection/icp_homo_matrix", 1000, &VisualServoingCommand::computeCommandCallbackPbvs, this);
         ROS_INFO("visual sevoing mode: PBVS");
@@ -78,7 +78,7 @@ void VisualServoingCommand::init(){
 
 }
 
-void VisualServoingCommand::computeCommandCallbackPbvs(const std_msgs::Float64MultiArray& msg){
+void VisualServoingCommand::computeCommandCallbackPbvs(const std_msgs::Float32MultiArray& msg){
 
     vpHomogeneousMatrix current_homo_matrix{msg.data[0], msg.data[1], msg.data[2], msg.data[3],
                                             msg.data[4], msg.data[5], msg.data[6], msg.data[7],

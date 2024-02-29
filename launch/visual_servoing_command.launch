@@ -1,0 +1,13 @@
+<launch>
+<arg name="adaptative_gain" default="false"/>
+<param name="adaptative_gain_value" value="$(arg adaptative_gain)"/>
+
+<arg name="lambda_gain" default="0.3"/>
+<param name="lambda_gain_value" value="$(arg lambda_gain)"/>
+
+<arg name="vs" default="pbvs"/>
+<param name="vs_type" value="$(arg vs)" type="string"/>
+
+
+<node pkg="gmlaas" name="visual_servoing_command_node" type="visual_servoing_command_node" output="screen"/>
+</launch>

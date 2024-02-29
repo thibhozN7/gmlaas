@@ -2,7 +2,7 @@
 
 #include "ros/ros.h"
 #include <sensor_msgs/Image.h>
-#include <std_msgs/Float64MultiArray.h>
+#include <std_msgs/Float32MultiArray.h>
 
 //#include "visual_servoing_realsense_visp/point_3d.h"
 
@@ -27,8 +27,8 @@ class VisualServoingCommand /*: public vpROSRobot*/
 public:
     // VisualServoingCommand(int argc, char **argv);
     VisualServoingCommand(ros::NodeHandle& node);
-    void computeCommandCallbackIbvs(const visual_servoing_realsense_visp::point_3dConstPtr& msg);
-    void computeCommandCallbackPbvs(const std_msgs::Float64MultiArray& msg);
+    //void computeCommandCallbackIbvs(const visual_servoing_realsense_visp::point_3dConstPtr& msg);
+    void computeCommandCallbackPbvs(const std_msgs::Float32MultiArray& msg);
     // void init(int argc, char **argv);
     void init();
     //bool point3dMsgIsNan(const visual_servoing_realsense_visp::point_3dConstPtr& msg);
