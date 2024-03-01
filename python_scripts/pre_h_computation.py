@@ -4,7 +4,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from std_msgs.msg import Float32MultiArray, MultiArrayDimension
 from message_filters import Subscriber, TimeSynchronizer
-from gmlaas.msg import CustomMsg 
 from gmlaas.msg import PreHMsg
 from gmlaas.msg import GraphMatcherMsg
 from apriltag_ros.msg import AprilTagDetectionArray
