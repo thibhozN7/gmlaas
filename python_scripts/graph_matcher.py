@@ -36,7 +36,7 @@ class GraphMatcher:
     def initReferenceAdjMatrix(self):
         """
         Initializes the reference adjacency matrix.
-
+f
         Returns:
             numpy.ndarray: The initialized reference adjacency matrix.
         """
@@ -126,7 +126,7 @@ class GraphMatcher:
         Publishes the graph matching data.
         """
         custom_msg = GraphMatcherMsg()
-        custom_msg.header = self.header
+        custom_msg.header = self.m_header
         custom_msg.adjacency_matrix = [ float(value) for row in self.m_current_adjacency_matrix for value in row ]
         custom_msg.indexed_matrix = self.m_indexed_matrix
         custom_msg.isomorphism_list = self.isomorphism_list
