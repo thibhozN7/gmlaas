@@ -8,7 +8,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.mplot3d import Axes3D
 from gmlaas.msg import PreHMsg
 import time
-
+import tf
 class EstimateHMatrix:
     def __init__(self) :
         rospy.init_node("estimate_h_matrix",anonymous=False)
@@ -103,8 +103,15 @@ class EstimateHMatrix:
         #rospy.loginfo("Input matrices received.")
         #rospy.loginfo("Estimating pose...")
         R_est, T_est = self.estimateRTMatrices()
-        #print(f"T = {T_est}")
+        print(f"T = {T_est}")
+        new_rotation= np.zeros((4,4))
+        new_rotation[:3,:3] = R_est
+        new_rotation[3,3] = 1
+        degree= tf.transformations.euler_from_matrix(new_rotation)
         print(f"R = {R_est}")
+        print(f"Radians = {degree}")
+        degree=np.degrees(degree)
+        print(f"Degrees = {degree}")
         #print("-------------")
         #time.sleep(2)
         #rospy.loginfo("Pose estimation completed.")

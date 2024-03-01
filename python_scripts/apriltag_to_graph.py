@@ -83,13 +83,25 @@ class AprilTagToGraph:
         self.publisher.publish(graph_builder_msg)
 
 if __name__=="__main__":
-    connections = [[5, 8],
-               [8, 2],
-               [8, 9],
-               [9, 7],
-               [8, 6],
-               [6, 1],
-               [1, 3],
-               [1, 4]]
+    connections = [[0,1],
+                   [1,2],[1,28],
+                   [2,3],[2,18],
+                   [3,5],[3,13],
+                   [4,7],[4,6],
+                   [5,8],
+                   [6,26],
+                   [8,36],[8,9],[8,4],
+                   [9,10],[9,11],
+                   [11,12],[11,14],
+                   [14,15],
+                   [13,16],
+                   [16,17],
+                   [18,19],
+                   [19,25],
+                   [28,29],
+                   [28,30],
+                   [29,31],
+                   [30,34],
+                   [30,32]]
     apriltag_to_graph = AprilTagToGraph("apriltag_to_graph_py",connections)
     rospy.spin()    
