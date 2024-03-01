@@ -42,7 +42,7 @@ public:
 private:
     ros::NodeHandle& m_node;
     vpColVector     m_vel;
-    ros::Subscriber m_points_sub;
+    ros::Subscriber m_sub;
     ros::Subscriber m_vel_command;
     vpPoint m_point[4];
     vpServo m_task;
