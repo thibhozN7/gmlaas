@@ -9,13 +9,77 @@ from gmlaas.msg import GraphBuilderMsg
 
 class AprilTagToGraph:
 
-    def __init__(self,nameNode,connections):
-        # Store the connections
-        self.m_connections=connections 
+    def __init__(self):
+        # Define the connections between the nodes, [parent, child] 
+        env_mode = "simu"
+        if env_mode == "real":
+                    self.m_connections =[[0, 1],
+                   [0, 2],
+                   [1, 3],
+                   [1, 4],
+                   [2, 5],
+                   [2, 6],
+                   [3, 7],
+                   [3, 8],
+                   [4, 9],
+                   [4, 10],
+                   [5, 11],
+                   [5, 12],
+                   [6, 13],
+                   [6, 14],
+                   [7, 15],
+                   [7, 16],
+                   [8, 17],
+                   [8, 18],
+                   [9, 19],
+                   [9, 20],
+                   [10, 21],
+                   [10, 22],
+                   [11, 23],
+                   [11, 24],
+                   [12, 25],
+                   [12, 26],
+                   [13, 27],
+                   [13, 28],
+                   [14, 29],
+                   [14, 30]]
+        elif env_mode == "simu":
+            self.m_connections = [[0, 1],
+                   [0, 2],
+                   [1, 3],
+                   [1, 4],
+                   [2, 5],
+                   [2, 6],
+                   [3, 7],
+                   [3, 8],
+                   [4, 9],
+                   [4, 10],
+                   [5, 11],
+                   [5, 12],
+                   [6, 13],
+                   [6, 14],
+                   [7, 15],
+                   [7, 16],
+                   [8, 17],
+                   [8, 18],
+                   [9, 19],
+                   [9, 20],
+                   [10, 21],
+                   [10, 22],
+                   [11, 23],
+                   [11, 24],
+                   [12, 25],
+                   [12, 26],
+                   [13, 27],
+                   [13, 28],
+                   [14, 29],
+                   [14, 30]]
+        else : 
+            print("Invalid environnment parameter.")
         # Initialize a ROS header for msg
         self.m_header = Header() 
         # Initialize the ROS node
-        rospy.init_node(nameNode, anonymous=False) 
+        rospy.init_node("apriltag_to_graph_py", anonymous=False) 
         # Subscribe to the AprilTag detections topic
         rospy.Subscriber("/tag_detections", AprilTagDetectionArray, self.apriltag_listener_callback)
         # Initialize a publisher for the graph data
@@ -93,37 +157,5 @@ class AprilTagToGraph:
         self.m_publisher.publish(graph_builder_msg)
 
 if __name__=="__main__":
-    # Define the connections between the nodes, [parent, child]
-    connections = [[0, 1],
-                   [0, 2],
-                   [1, 3],
-                   [1, 4],
-                   [2, 5],
-                   [2, 6],
-                   [3, 7],
-                   [3, 8],
-                   [4, 9],
-                   [4, 10],
-                   [5, 11],
-                   [5, 12],
-                   [6, 13],
-                   [6, 14],
-                   [7, 15],
-                   [7, 16],
-                   [8, 17],
-                   [8, 18],
-                   [9, 19],
-                   [9, 20],
-                   [10, 21],
-                   [10, 22],
-                   [11, 23],
-                   [11, 24],
-                   [12, 25],
-                   [12, 26],
-                   [13, 27],
-                   [13, 28],
-                   [14, 29],
-                   [14, 30]]
-                   
-    apriltag_to_graph = AprilTagToGraph("apriltag_to_graph_py",connections)
+    apriltag_to_graph = AprilTagToGraph()
     rospy.spin()    

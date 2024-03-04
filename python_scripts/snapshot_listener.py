@@ -14,6 +14,7 @@ package_dir = os.path.dirname(os.path.dirname(current_dir))
 
 try :
     rospy.loginfo("Trying to get the name_arg parameter from the launch file...")
+    env_csvfile = rospy.get_param('~env_arg')
     name_csvfile = rospy.get_param('~name_arg')
 except KeyError as e:
     rospy.loginfo("Trying to get the name_arg parameter from the rosrun command line...")
@@ -28,8 +29,8 @@ except KeyError as e:
         raise ValueError("Arg name_arg parameter not properly called.")
 
 
-file1 = open(f"{package_dir}/datasets/snapshots/{name_csvfile}_graph_dataset.csv", "w")
-file2 = open(f"{package_dir}/datasets/snapshots/{name_csvfile}_tags_dataset.csv", "w")
+file1 = open(f"{package_dir}/datasets/snapshots/{env_csvfile}/{name_csvfile}_graph_dataset.csv", "w")
+file2 = open(f"{package_dir}/datasets/snapshots//{env_csvfile}/{name_csvfile}_tags_dataset.csv", "w")
 
 
 datetime = dt.datetime.now()

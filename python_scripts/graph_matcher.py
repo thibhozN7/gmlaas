@@ -16,7 +16,7 @@ class GraphMatcher:
         np.random.seed(1)     
         self.m_graph_builder_data_sub = rospy.Subscriber("/graph_building/data",GraphBuilderMsg, self.callback,queue_size=1)
         self.m_graph_matcher_data_pub = rospy.Publisher("/graph_matching/data",GraphMatcherMsg, queue_size=10)
-
+        
         self.m_header = Header()
         self.m_reference_adjacency_matrix = self.initReferenceAdjMatrix() 
     
