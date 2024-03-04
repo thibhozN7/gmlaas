@@ -38,7 +38,7 @@ class PreHMatrix:
     
     def buildReferenceIndexMatrix(self):
         # Read the reference index matrix from the reference tags dataset
-        with open(f"{package_dir}/datasets/snapshots/{self.env}/reference_graph_dataset.csv", "r") as file:
+        with open(f"{package_dir}/datasets/snapshots/{self.simu}/reference_graph_dataset.csv", "r") as file:
             reader = csv.reader(file, delimiter=';')
             next(reader)  # Skip the header row
             next(reader)
@@ -65,7 +65,7 @@ class PreHMatrix:
     
     def buildDesiredTagDict(self):
         # Build dictionaries for desired tag coordinates
-        with open(f"{package_dir}/datasets/snapshots/{self.env}/desired_frame_tags_dataset.csv", "r") as file:
+        with open(f"{package_dir}/datasets/snapshots/{self.simu}/desired_frame_tags_dataset.csv", "r") as file:
             reader = csv.reader(file, delimiter=';')
             next(reader)  # Skip the header row
             next(reader)

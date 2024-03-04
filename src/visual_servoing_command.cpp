@@ -38,12 +38,16 @@ void VisualServoingCommand::init(){
     //clock_sub = m_node.subscribe("/clock", 1, &VisualServoingCommand::clockCallback);
     
     // Fixed or dynamic gain used to adjust the control law in minimizing the error.
+    ros::param::get("adaptative_gain_value",  m_adaptative_gain);
+    ros::param::get("lamda_gain_value",  m_lambda_gain);
+
+
     if(m_adaptative_gain){
         m_task.setLambda(vpAdaptiveGain());
         std::cout << "Adaptive Gain initialization" << std::endl;
     }else{
-        m_task.setLambda(m_lambda_gain);
-        std::cout << "Lambda gain initialization" << m_lambda_gain << std::endl;
+        m_task.setLambda(0.1);
+        std::cout << "Lambda gain initialization :" << m_lambda_gain << std::endl;
     }
 
     this->threshold_distance = 0.02; //2 centimeters 

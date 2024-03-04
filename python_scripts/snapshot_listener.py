@@ -21,8 +21,9 @@ except KeyError as e:
     argv = rospy.myargv()[1:]
     print(argv)
     print(len(argv))
-    if len(argv) == 1:
-        name_csvfile = argv[0]
+    if len(argv) == 2:
+        env_csvfile = argv[0]
+        name_csvfile = argv[1]
     else :
         rospy.loginfo("... Please set the name_arg parameter in running the launch file : roslaunch gmlaas snapshot_listener.launch nam_arg:=\"csvNameFile\"") 
         rospy.loginfo("or in running the rosrun command line : rosrun gmlaas snapshot_listener.py csvNameFile")
