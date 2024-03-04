@@ -22,8 +22,6 @@ VisualServoingCommand::VisualServoingCommand(ros::NodeHandle& node):m_node{node}
 void VisualServoingCommand::init(){
     
     m_vel_pub = m_node.advertise<geometry_msgs::TwistStamped>("/visual_servoing_command/velocity_ref", 1, true);
-    m_vel_command = m_node.subscribe("/vel_command", 1,
-                                         &VisualServoingCommand::velCommandCallback, this);
     //Eye in hand visual servoing task initialization (camera in the hand of the robot)
     //effectors are the camera and the robot is the object
     m_task.setServo(vpServo::EYEINHAND_CAMERA);
@@ -46,7 +44,7 @@ void VisualServoingCommand::init(){
         std::cout << "Lambda gain initialization" << m_lambda_gain << std::endl;
     }
 
-    this.threshold_distance = 0.02; //2 centimeters 
+    this->threshold_distance = 0.02; //2 centimeters 
 
     m_flag = true; // for IBVS command computation
 
@@ -122,7 +120,7 @@ void VisualServoingCommand::computeCommandCallbackPbvs(const std_msgs::Float32Mu
 
 }
 
-double VisualServoingCommand::distance_between_matrices(const vpHomogeneousMatrix& matrix1, const vpHomogeneousMatrix& matrix2) {
+double VisualServoingCommand::distance_between_matrices(vpHomogeneousMatrix& matrix1, vpHomogeneousMatrix& matrix2) {
     // Get the translation vectors from both matrices
     vpTranslationVector translation1 = matrix1.getTranslationVector();
     vpTranslationVector translation2 = matrix2.getTranslationVector();
@@ -136,12 +134,12 @@ double VisualServoingCommand::distance_between_matrices(const vpHomogeneousMatri
     return distance;
 }
 
-bool VisualServoingCommand::stop_condition_satisfied(this, const vpHomogeneousMatrix& current_homo_matrix, const vpHomogeneousMatrix& desire_homo_matrix) {
-    // check stop criterion for servoing
-    return distance_between_matrices(current_homo_matrix, desire_homo_matrix) <= this.threshold_distance;
+bool VisualServoingCommand::stop_condition_satisfied (vpHomogeneousMatrix& current_homo_matrix, vpHomogeneousMatrix& desire_homo_matrix) {
+    // check stop criterion for servoing()
+    return distance_between_matrices(current_homo_matrix, desire_homo_matrix) <= this->threshold_distance;
 }
 
-void VisualServoingCommand ::stop_visual_servoing() {
+void VisualServoingCommand::stop_visual_servoing() {
     ROS_INFO("Stop criterion reached, end of servoing");
 
 }  

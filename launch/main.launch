@@ -1,7 +1,7 @@
 <launch>
 
 
-<arg name="simu" default=True/> 
+<arg name="simu" default="true"/> 
 <param name="simu_value" value="$(arg simu)"/>
 
 

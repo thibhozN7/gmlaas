@@ -16,9 +16,18 @@ class GraphMatcher:
         np.random.seed(1)     
         self.m_graph_builder_data_sub = rospy.Subscriber("/graph_building/data",GraphBuilderMsg, self.callback,queue_size=1)
         self.m_graph_matcher_data_pub = rospy.Publisher("/graph_matching/data",GraphMatcherMsg, queue_size=10)
-        
+  
+        # Initialize variables
+        simu=rospy.get_param('~simu_value', True)
+        print(f"simu: {simu}")
+        if simu : 
+            self.simu = "simu"
+        else :
+            self.simu = "real" #from realsense camera
+
         self.m_header = Header()
         self.m_reference_adjacency_matrix = self.initReferenceAdjMatrix() 
+        
     
     def buildMatrix(self, data, rows, cols):
         """
@@ -44,7 +53,7 @@ f
         """
         package_path = os.path.dirname(os.path.dirname(__file__))  # Get the directory of the ROS package (two levels up from the script file)
         csv_name = "reference_graph_dataset.csv"
-        file_path = os.path.join(package_path, "datasets/snapshots", csv_name )
+        file_path = os.path.join(package_path, f"datasets/snapshots/{self.simu}", csv_name )
         
         with open(file_path, 'r',) as file:
             reader = csv.reader(file, delimiter=';')
