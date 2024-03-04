@@ -3,7 +3,7 @@
 #include "ros/ros.h"
 #include <sensor_msgs/Image.h>
 #include <std_msgs/Float32MultiArray.h>
-
+#include <rosgraph_msgs/Clock.h> // Include the necessary header file
 //#include "visual_servoing_realsense_visp/point_3d.h"
 
 #include <visp3/visual_features/vpFeatureBuilder.h>
@@ -35,6 +35,7 @@ public:
     void publishVelocity(const vpColVector& vel);
     void velCommandCallback(const geometry_msgs::TwistStampedConstPtr& vel_command_msg);
 
+
     ros::Publisher m_vel_pub;
     geometry_msgs::TwistStamped m_vel_twist_stamped;
     bool m_interrupt_flag = true;
@@ -44,6 +45,7 @@ private:
     vpColVector     m_vel;
     ros::Subscriber m_sub;
     ros::Subscriber m_vel_command;
+
     vpPoint m_point[4];
     vpServo m_task;
     vpFeaturePoint m_s[4];

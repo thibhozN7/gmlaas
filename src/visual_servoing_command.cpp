@@ -21,9 +21,8 @@ VisualServoingCommand::VisualServoingCommand(ros::NodeHandle& node):m_node{node}
  
 void VisualServoingCommand::init(){
     
-    m_vel_pub = m_node.advertise<geometry_msgs::TwistStamped>("/visual_servoing_command/velocity_ref", 1, true);
-    m_vel_command = m_node.subscribe("/vel_command", 1,
-                                         &VisualServoingCommand::velCommandCallback, this);
+    m_vel_pub = m_node.advertise<geometry_msgs::TwistStamped>("/visual_servoing_command/velocity_ref", 1, false);
+    
     //Eye in hand visual servoing task initialization (camera in the hand of the robot)
     //effectors are the camera and the robot is the object
     m_task.setServo(vpServo::EYEINHAND_CAMERA);
@@ -36,7 +35,8 @@ void VisualServoingCommand::init(){
 
     m_sub = m_node.subscribe("/h_computation/h_matrix", 1,
                                     &VisualServoingCommand::computeCommandCallbackPbvs, this);
-
+    //clock_sub = m_node.subscribe("/clock", 1, &VisualServoingCommand::clockCallback);
+    
     // Fixed or dynamic gain used to adjust the control law in minimizing the error.
     if(m_adaptative_gain){
         m_task.setLambda(vpAdaptiveGain());

@@ -36,7 +36,6 @@ include_directories(
   ${VISP_INCLUDE_DIRS}
 )
 
-# fake_graph_builder_node
 add_executable(visual_servoing_command_node
   # ${gmlaas_SOURCE_DIR}/main_fake_graph_builder.cpp
   # ${gmlaas_SOURCE_DIR}/fake_graph_builder.cpp

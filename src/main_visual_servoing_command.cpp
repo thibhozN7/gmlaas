@@ -9,7 +9,6 @@ int main(int argc, char **argv){
   ros::NodeHandle visual_servoing_command_node;
   
   VisualServoingCommand visual_servoing_command(visual_servoing_command_node);
-  // VisualServoingCommand visual_servoing_command(argc, argv);
 
   ros::spin();
   return 0;

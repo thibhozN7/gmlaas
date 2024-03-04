@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import rospy
-from geometry_msgs.msg import Twist
+from geometry_msgs.msg import TwistStamped
 from gazebo_msgs.msg import ModelState
 from gazebo_msgs.msg import ModelStates
 
@@ -19,12 +19,12 @@ class SetPose:
         self.latest_model_state_msg = None
 
         # Subscribers per i due topic
-        rospy.Subscriber('/cmd_vel', Twist, self.cmd_vel_callback)
+        rospy.Subscriber('/cmd_vel', TwistStamped, self.cmd_vel_callback)
         rospy.Subscriber('/gazebo/model_states', ModelStates, self.model_state_callback)
 
     def cmd_vel_callback(self, msg):
         # Memorizza l'ultimo messaggio cmd_vel ricevuto
-        self.latest_cmd_vel_msg = msg
+        self.latest_cmd_vel_msg = msg.twist
 
         # Se entrambi i messaggi sono stati ricevuti, esegui l'aggiornamento dello stato del modello
         if self.latest_model_state_msg is not None:
@@ -41,10 +41,18 @@ class SetPose:
     def update_model_state(self):
         # Recupera i dati di velocità lineare e angolare dal messaggio cmd_vel
         linear_x = self.latest_cmd_vel_msg.linear.x
+        linear_y = self.latest_cmd_vel_msg.linear.y
+        linear_z = self.latest_cmd_vel_msg.linear.z
+        angular_x = self.latest_cmd_vel_msg.angular.x
+        angular_y = self.latest_cmd_vel_msg.angular.y
         angular_z = self.latest_cmd_vel_msg.angular.z
 
         # Imposta le velocità lineari e angolari nel messaggio di stato
         self.state_msg.twist.linear.x = linear_x
+        self.state_msg.twist.linear.y = linear_y
+        self.state_msg.twist.linear.z = linear_z
+        self.state_msg.twist.angular.x = angular_x
+        self.state_msg.twist.angular.y = angular_y
         self.state_msg.twist.angular.z = angular_z
 
         # Recupera l'ultima posizione del robot dal messaggio ModelStates
