@@ -11,8 +11,9 @@ class AprilTagToGraph:
 
     def __init__(self):
         # Define the connections between the nodes, [parent, child] 
-        env_mode = "simu"
-        if env_mode == "real":
+        
+        simu = rospy.get_param("/simu_value")
+        if simu == True:
                     self.m_connections =[[0, 1],
                    [0, 2],
                    [1, 3],
@@ -43,7 +44,7 @@ class AprilTagToGraph:
                    [13, 28],
                    [14, 29],
                    [14, 30]]
-        elif env_mode == "simu":
+        else:
             self.m_connections = [[0, 1],
                    [0, 2],
                    [1, 3],
@@ -74,8 +75,7 @@ class AprilTagToGraph:
                    [13, 28],
                    [14, 29],
                    [14, 30]]
-        else : 
-            print("Invalid environnment parameter.")
+
         # Initialize a ROS header for msg
         self.m_header = Header() 
         # Initialize the ROS node

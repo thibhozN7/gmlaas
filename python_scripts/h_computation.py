@@ -11,7 +11,7 @@ import time
 import tf
 class EstimateHMatrix:
     def __init__(self) :
-        rospy.init_node("estimate_h_matrix",anonymous=False)
+        rospy.init_node("h_computation_py",anonymous=False)
         rospy.loginfo("Starting H computation...")
         self.m_points_sub = rospy.Subscriber("/h_computation/input_matrices",PreHMsg,self.callback)
         self.m_h_matrix_pub = rospy.Publisher("/h_computation/h_matrix",Float32MultiArray,queue_size=10)

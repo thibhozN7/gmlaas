@@ -17,7 +17,7 @@ package_dir = os.path.dirname(os.path.dirname(current_dir))
 
 class PreHMatrix:
     def __init__(self):
-        rospy.init_node("pre_h_matrix", anonymous=False)
+        rospy.init_node("pre_h_computation_py", anonymous=False)
         # Define subscribers
         self.m_graph_sub = rospy.Subscriber("/graph_matching/data", GraphMatcherMsg,self.callback)
         # self.m_tag_sub = Subscriber("/tag_detections", AprilTagDetectionArray)
@@ -30,11 +30,11 @@ class PreHMatrix:
         self.m_pre_h_pub = rospy.Publisher('/h_computation/input_matrices', PreHMsg, queue_size=10)
 
         # Initialize variables
-        env_mode = "simu"
-        if env_mode == "real":
-            self.env = "real"
-        elif env_mode == "simu":
-            self.env = "simu"
+        simu = rospy.get_param("/simu_value")
+        if simu : 
+            self.simu = "simu"
+        else :
+            self.simu = "real"
     
     def buildReferenceIndexMatrix(self):
         # Read the reference index matrix from the reference tags dataset
