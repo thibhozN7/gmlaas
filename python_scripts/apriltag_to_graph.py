@@ -9,13 +9,60 @@ from gmlaas.msg import GraphBuilderMsg
 
 class AprilTagToGraph:
 
-    def __init__(self,nameNode,connections):
-        # Store the connections
-        self.m_connections=connections 
+    def __init__(self):
+        # Define the connections between the nodes, [parent, child] 
+        
+        simu=rospy.get_param('~simu_value', True)        
+        if simu == True:
+                    self.m_connections =[[0, 1],
+                   [0, 2],
+                   [1, 3],
+                   [1, 4],
+                   [2, 5],
+                   [2, 6],
+                   [3, 7],
+                   [3, 8],
+                   [4, 9],
+                   [4, 10],
+                   [5, 11],
+                   [5, 12],
+                   [6, 13],
+                   [6, 14],
+                   [7, 15],
+                   [7, 16],
+                   [8, 17],
+                   [8, 18],
+                   [9, 19],
+                   [9, 20],
+                   [10, 21],
+                   [10, 22]]
+        else:
+                self.m_connections = [[0,1],
+                   [1,2],[1,28],
+                   [2,3],[2,18],
+                   [3,5],[3,13],
+                   [4,7],[4,6],
+                   [5,8],
+                   [6,26],
+                   [8,36],[8,9],[8,4],
+                   [9,10],[9,11],
+                   [11,12],[11,14],
+                   [14,15],
+                   [13,16],
+                   [16,17],
+                   [18,19],
+                   [19,25],
+                   [28,29],
+                   [28,30],
+                   [29,31],
+                   [30,34],
+                   [30,32]]
+                   
+
         # Initialize a ROS header for msg
         self.m_header = Header() 
         # Initialize the ROS node
-        rospy.init_node(nameNode, anonymous=False) 
+        rospy.init_node("apriltag_to_graph_py", anonymous=False) 
         # Subscribe to the AprilTag detections topic
         rospy.Subscriber("/tag_detections", AprilTagDetectionArray, self.apriltag_listener_callback)
         # Initialize a publisher for the graph data
@@ -93,37 +140,5 @@ class AprilTagToGraph:
         self.m_publisher.publish(graph_builder_msg)
 
 if __name__=="__main__":
-    # Define the connections between the nodes, [parent, child]
-    connections = [[0, 1],
-                   [0, 2],
-                   [1, 3],
-                   [1, 4],
-                   [2, 5],
-                   [2, 6],
-                   [3, 7],
-                   [3, 8],
-                   [4, 9],
-                   [4, 10],
-                   [5, 11],
-                   [5, 12],
-                   [6, 13],
-                   [6, 14],
-                   [7, 15],
-                   [7, 16],
-                   [8, 17],
-                   [8, 18],
-                   [9, 19],
-                   [9, 20],
-                   [10, 21],
-                   [10, 22],
-                   [11, 23],
-                   [11, 24],
-                   [12, 25],
-                   [12, 26],
-                   [13, 27],
-                   [13, 28],
-                   [14, 29],
-                   [14, 30]]
-                   
-    apriltag_to_graph = AprilTagToGraph("apriltag_to_graph_py",connections)
+    apriltag_to_graph = AprilTagToGraph()
     rospy.spin()    

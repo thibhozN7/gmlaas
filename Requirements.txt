@@ -1,0 +1,25 @@
+Lib requirements on Ubuntu 20.04
+
+# Python
+rospy
+apriltag_ros
+graph_builder
+numpy
+pygmtools
+matplotlib
+tf
+message_filters
+
+# C++
+geometry_msgs
+cv_bridge
+visp3_core
+visp3_gui
+visp3_vs
+roslib
+rosconsole
+roscpp
+std_msgs
+sensor_msgs
+tf
+eigen_conversions

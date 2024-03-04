@@ -11,12 +11,23 @@ import os
 
 class GraphMatcher:
     def __init__(self):
-        rospy.init_node("graph_matcher_py", anonymous=False)        
-        self.m_graph_builder_data_sub = rospy.Subscriber("/graph_building/data",GraphBuilderMsg, self.callback,queue_size=10)
+        rospy.init_node("graph_matcher_py", anonymous=False)   
+        pygm.set_backend('numpy')
+        np.random.seed(1)     
+        self.m_graph_builder_data_sub = rospy.Subscriber("/graph_building/data",GraphBuilderMsg, self.callback,queue_size=1)
         self.m_graph_matcher_data_pub = rospy.Publisher("/graph_matching/data",GraphMatcherMsg, queue_size=10)
+  
+        # Initialize variables
+        simu=rospy.get_param('~simu_value', True)
+        print(f"simu: {simu}")
+        if simu : 
+            self.simu = "simu"
+        else :
+            self.simu = "real" #from realsense camera
 
         self.m_header = Header()
         self.m_reference_adjacency_matrix = self.initReferenceAdjMatrix() 
+        
     
     def buildMatrix(self, data, rows, cols):
         """
@@ -36,13 +47,13 @@ class GraphMatcher:
     def initReferenceAdjMatrix(self):
         """
         Initializes the reference adjacency matrix.
-
+f
         Returns:
             numpy.ndarray: The initialized reference adjacency matrix.
         """
         package_path = os.path.dirname(os.path.dirname(__file__))  # Get the directory of the ROS package (two levels up from the script file)
         csv_name = "reference_graph_dataset.csv"
-        file_path = os.path.join(package_path, "datasets/snapshots", csv_name )
+        file_path = os.path.join(package_path, f"datasets/snapshots/{self.simu}", csv_name )
         
         with open(file_path, 'r',) as file:
             reader = csv.reader(file, delimiter=';')
@@ -75,8 +86,6 @@ class GraphMatcher:
         Returns:
             tuple: A tuple containing the affinity matrix (K) and the matching matrix (X).
         """
-        pygm.set_backend('numpy')
-        np.random.seed(1)
 
         rospy.loginfo(f"Current Adjacency Matrix: {self.m_current_adjacency_matrix.shape[0]}x{self.m_current_adjacency_matrix.shape[1]}")
         rospy.loginfo(f"Reference Adjacency Matrix: {self.m_reference_adjacency_matrix.shape[0]}x{self.m_reference_adjacency_matrix.shape[1]}")

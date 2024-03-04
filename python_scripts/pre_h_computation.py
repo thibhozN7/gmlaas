@@ -17,8 +17,7 @@ package_dir = os.path.dirname(os.path.dirname(current_dir))
 
 class PreHMatrix:
     def __init__(self):
-        rospy.init_node("pre_h_matrix", anonymous=False)
-
+        rospy.init_node("pre_h_computation_py", anonymous=False)
         # Define subscribers
         self.m_graph_sub = rospy.Subscriber("/graph_matching/data", GraphMatcherMsg,self.callback)
         # self.m_tag_sub = Subscriber("/tag_detections", AprilTagDetectionArray)
@@ -31,11 +30,15 @@ class PreHMatrix:
         self.m_pre_h_pub = rospy.Publisher('/h_computation/input_matrices', PreHMsg, queue_size=10)
 
         # Initialize variables
-        
+        simu=rospy.get_param('~simu_value', True)
+        if simu : 
+            self.simu = "simu"
+        else :
+            self.simu = "real"
     
     def buildReferenceIndexMatrix(self):
         # Read the reference index matrix from the reference tags dataset
-        with open(f"{package_dir}/datasets/snapshots/reference_graph_dataset.csv", "r") as file:
+        with open(f"{package_dir}/datasets/snapshots/{self.env}/reference_graph_dataset.csv", "r") as file:
             reader = csv.reader(file, delimiter=';')
             next(reader)  # Skip the header row
             next(reader)
@@ -62,7 +65,7 @@ class PreHMatrix:
     
     def buildDesiredTagDict(self):
         # Build dictionaries for desired tag coordinates
-        with open(f"{package_dir}/datasets/snapshots/desired_frame_tags_dataset.csv", "r") as file:
+        with open(f"{package_dir}/datasets/snapshots/{self.env}/desired_frame_tags_dataset.csv", "r") as file:
             reader = csv.reader(file, delimiter=';')
             next(reader)  # Skip the header row
             next(reader)

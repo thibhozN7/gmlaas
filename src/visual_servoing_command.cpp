@@ -46,6 +46,8 @@ void VisualServoingCommand::init(){
         std::cout << "Lambda gain initialization" << m_lambda_gain << std::endl;
     }
 
+    this->threshold_distance = 0.02; //2 centimeters 
+
     m_flag = true; // for IBVS command computation
 
     // Initializing the velocity command to zero in all directions.
@@ -79,43 +81,70 @@ void VisualServoingCommand::computeCommandCallbackPbvs(const std_msgs::Float32Mu
                                            0, 1, 0, 0,
                                            0, 0, 1, 0,
                                            0, 0, 0, 1};
+
+    // Vérifier le critère d'arrêt
+    if (stop_condition_satisfied(current_homo_matrix, desire_homo_matrix)) {
+        stop_visual_servoing(); // Arrêter le processus de servoing visuel
+    } 
+    else {
+        // caracteristics extraction : translation (t) and rotation (tu)
+        vpFeatureTranslation t(vpFeatureTranslation::cdMc);
+        vpFeatureThetaU tu(vpFeatureThetaU::cdRc);
+        t.buildFrom(current_homo_matrix);
+        tu.buildFrom(current_homo_matrix);
     
-    // caracteristics extraction : translation (t) and rotation (tu)
-    vpFeatureTranslation t(vpFeatureTranslation::cdMc);
-    vpFeatureThetaU tu(vpFeatureThetaU::cdRc);
-    t.buildFrom(current_homo_matrix);
-    tu.buildFrom(current_homo_matrix);
- 
-    // definition of desired caracteristics 
-    vpFeatureTranslation td(vpFeatureTranslation::cdMc);
-    vpFeatureThetaU tud(vpFeatureThetaU::cdRc);
-    td.buildFrom(desire_homo_matrix);
-    tud.buildFrom(desire_homo_matrix);
+        // definition of desired caracteristics 
+        vpFeatureTranslation td(vpFeatureTranslation::cdMc);
+        vpFeatureThetaU tud(vpFeatureThetaU::cdRc);
+        td.buildFrom(desire_homo_matrix);
+        tud.buildFrom(desire_homo_matrix);
 
-    m_task.addFeature(t, td);
-    m_task.addFeature(tu, tud);
-    m_task.setServo(vpServo::EYEINHAND_CAMERA); //same as in init()
-    m_task.setInteractionMatrixType(vpServo::CURRENT); //same as in init()
-    
-    // Velocity command is computed there
-    m_vel = m_task.computeControlLaw(); 
-    std::cout << "vel : \n" << m_vel << std::endl;
+        m_task.addFeature(t, td);
+        m_task.addFeature(tu, tud);
+        m_task.setServo(vpServo::EYEINHAND_CAMERA); //same as in init()
+        m_task.setInteractionMatrixType(vpServo::CURRENT); //same as in init()
+        
+        // Velocity command is computed there
+        m_vel = m_task.computeControlLaw(); 
+        
+        //Setting linear and angular velocity components to the end effector
+        // Gains adjust the effect enforced by the velocity command
+        m_vel_twist_stamped.twist.linear.x = m_x_gain*m_vel[0]; 
+        m_vel_twist_stamped.twist.linear.y = m_y_gain*m_vel[1];
+        m_vel_twist_stamped.twist.linear.z = m_z_gain*m_vel[2];
+        m_vel_twist_stamped.twist.angular.x = m_rx_gain*m_vel[3]; //roll
+        m_vel_twist_stamped.twist.angular.y = m_ry_gain*m_vel[4]; //pitch
+        m_vel_twist_stamped.twist.angular.z = m_rz_gain*m_vel[5]; //yaw
 
-    
-    //Setting linear and angular velocity components to the end effector
-    // Gains adjust the effect enforced by the velocity command
-    m_vel_twist_stamped.twist.linear.x = m_x_gain*m_vel[0]; 
-    m_vel_twist_stamped.twist.linear.y = m_y_gain*m_vel[1];
-    m_vel_twist_stamped.twist.linear.z = m_z_gain*m_vel[2];
-    m_vel_twist_stamped.twist.angular.x = m_rx_gain*m_vel[3]; //roll
-    m_vel_twist_stamped.twist.angular.y = m_ry_gain*m_vel[4]; //pitch
-    m_vel_twist_stamped.twist.angular.z = m_rz_gain*m_vel[5]; //yaw
+        //Publishing to /visual_servoing_command/velocity_ref topic
+        m_vel_pub.publish(m_vel_twist_stamped);
+    }
 
-    std::cout << "vel twist : \n" << m_vel_twist_stamped << std::endl;
-
-    //Publishing to /visual_servoing_command/velocity_ref topic
-    m_vel_pub.publish(m_vel_twist_stamped);
 }
+
+double VisualServoingCommand::distance_between_matrices(vpHomogeneousMatrix& matrix1, vpHomogeneousMatrix& matrix2) {
+    // Get the translation vectors from both matrices
+    vpTranslationVector translation1 = matrix1.getTranslationVector();
+    vpTranslationVector translation2 = matrix2.getTranslationVector();
+
+    // Calculate the difference between the translation vectors
+    vpTranslationVector diff_translation = translation1 - translation2;
+
+    // Calculate the Euclidean norm of the difference
+    double distance = diff_translation.euclideanNorm();
+    
+    return distance;
+}
+
+bool VisualServoingCommand::stop_condition_satisfied (vpHomogeneousMatrix& current_homo_matrix, vpHomogeneousMatrix& desire_homo_matrix) {
+    // check stop criterion for servoing()
+    return distance_between_matrices(current_homo_matrix, desire_homo_matrix) <= this->threshold_distance;
+}
+
+void VisualServoingCommand::stop_visual_servoing() {
+    ROS_INFO("Stop criterion reached, end of servoing");
+    ros::shutdown();
+}  
 
 void VisualServoingCommand::publishVelocity(const vpColVector& vel){
     if(m_visp_publisher){
@@ -132,60 +161,11 @@ void VisualServoingCommand::publishVelocity(const vpColVector& vel){
 
         m_vel_pub.publish(vel_twist_stamped);
         
-        // ros::param::get("save_velocity_value", m_save_velocity);
-        // if(m_save_velocity){
-        //     // ROS_INFO("save_velocity_value");
-        //     m_file.open(global::data_vel_file_path, std::ios_base::app | std::ios::ate);
-        //     if(!m_file.is_open())
-        //     {
-        //         ROS_ERROR("Unable to open velocity data file \n");
-        //     }
-        //     const std::string position_string =
-        //                                 std::to_string(vel_twist_stamped.twist.linear.x) +"\t"+
-        //                                 std::to_string(vel_twist_stamped.twist.linear.y) +"\t"+
-        //                                 std::to_string(vel_twist_stamped.twist.linear.z) +"\t"+
-        //                                 std::to_string(vel_twist_stamped.twist.angular.x) +"\t"+
-        //                                 std::to_string(vel_twist_stamped.twist.angular.y) +"\t"+
-        //                                 std::to_string(vel_twist_stamped.twist.angular.z) +"\t"+
-        //                                 std::to_string(ros::Time::now().toSec()) +"\n";
-        //     m_file << position_string;
-        //     m_file.close();
-        // }
     }
 }
 
-// bool VisualServoingCommand::point3dMsgIsNan(const visual_servoing_realsense_visp::point_3dConstPtr& msg){
 
-//     if(msg){
-//         for(const auto& p : msg->p_3d){
-//             if(!(isnan(p.x) && isnan(p.y) && isnan(p.z))){
-//                 return false;
-//             }
-//         }
-//         return true;
-//     }else{
-//         return true;
-//     }
-// }    
-
-void VisualServoingCommand::velCommandCallback(const geometry_msgs::TwistStampedConstPtr& vel_command_msg){
-    
-    m_vel_file.open(global::data_vel_command_file_path, std::ios_base::app | std::ios::ate);
-                
-    if(!m_vel_file.is_open()){
-        std::cout<<"Unable to open the file.\n";
-    }
-        
-    std::string myStrvel = std::to_string(vel_command_msg->twist.linear.x) +"\t"+
-                           std::to_string(vel_command_msg->twist.linear.y) +"\t"+
-                           std::to_string(vel_command_msg->twist.linear.z) +"\t"+
-                           std::to_string(vel_command_msg->twist.angular.x) +"\t"+
-                           std::to_string(vel_command_msg->twist.angular.y) +"\t"+
-                           std::to_string(vel_command_msg->twist.angular.z) +"\t"+
-                           std::to_string(ros::Time::now().toSec()) +"\n";
-    m_vel_file<<myStrvel;
-    m_vel_file.close();
-}
+/////IBVS 
 
 // void VisualServoingCommand::computeCommandCallbackIbvs(const visual_servoing_realsense_visp::point_3dConstPtr& msg){
 
@@ -225,3 +205,18 @@ void VisualServoingCommand::velCommandCallback(const geometry_msgs::TwistStamped
 //         }
 //     }
 // }
+
+
+// bool VisualServoingCommand::point3dMsgIsNan(const visual_servoing_realsense_visp::point_3dConstPtr& msg){
+
+//     if(msg){
+//         for(const auto& p : msg->p_3d){
+//             if(!(isnan(p.x) && isnan(p.y) && isnan(p.z))){
+//                 return false;
+//             }
+//         }
+//         return true;
+//     }else{
+//         return true;
+//     }
+// }    
