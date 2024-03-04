@@ -47,3 +47,8 @@ add_executable(visual_servoing_command_node
 target_link_libraries(visual_servoing_command_node ${catkin_LIBRARIES})
 target_link_libraries(visual_servoing_command_node ${VISP_LIBRARIES})
 
+message(STATUS "VISP_FOUND: ${VISP_FOUND}")
+message(STATUS "VISP_INCLUDE_DIRS: ${VISP_INCLUDE_DIRS}")
+message(STATUS "VISP_LIBRARIES: ${VISP_LIBRARIES}")
+message(STATUS "VISP_VERSION: ${VISP_VERSION}")
+
