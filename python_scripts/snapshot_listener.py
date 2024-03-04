@@ -6,7 +6,7 @@ from apriltag_ros.msg import AprilTagDetectionArray
 from message_filters import Subscriber, TimeSynchronizer
 import datetime as dt
 import os
-#import time
+import time
 
 
 current_dir = os.path.realpath(__file__)
@@ -14,6 +14,7 @@ package_dir = os.path.dirname(os.path.dirname(current_dir))
 
 try :
     rospy.loginfo("Trying to get the name_arg parameter from the launch file...")
+    env_csvfile = rospy.get_param('~env_arg')
     name_csvfile = rospy.get_param('~name_arg')
 except KeyError as e:
     rospy.loginfo("Trying to get the name_arg parameter from the rosrun command line...")
@@ -28,8 +29,8 @@ except KeyError as e:
         raise ValueError("Arg name_arg parameter not properly called.")
 
 
-file1 = open(f"{package_dir}/datasets/snapshots/{name_csvfile}_graph_dataset.csv", "w")
-file2 = open(f"{package_dir}/datasets/snapshots/{name_csvfile}_tags_dataset.csv", "w")
+file1 = open(f"{package_dir}/datasets/snapshots/{env_csvfile}/{name_csvfile}_graph_dataset.csv", "w")
+file2 = open(f"{package_dir}/datasets/snapshots//{env_csvfile}/{name_csvfile}_tags_dataset.csv", "w")
 
 
 datetime = dt.datetime.now()
@@ -96,7 +97,7 @@ if __name__ == "__main__":
     print("timer starts now")
     for c in range(5):
         print(5-c)
-        rospy.sleep(1)
+        time.sleep(1)
     print("timer ends now")
     
     sync = TimeSynchronizer([graph_sub, tag_sub], queue_size=10)

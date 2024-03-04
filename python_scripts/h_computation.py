@@ -7,10 +7,11 @@ import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.mplot3d import Axes3D
 from gmlaas.msg import PreHMsg
-
+import time
+import tf
 class EstimateHMatrix:
     def __init__(self) :
-        rospy.init_node("estimate_h_matrix",anonymous=False)
+        rospy.init_node("h_computation_py",anonymous=False)
         rospy.loginfo("Starting H computation...")
         self.m_points_sub = rospy.Subscriber("/h_computation/input_matrices",PreHMsg,self.callback)
         self.m_h_matrix_pub = rospy.Publisher("/h_computation/h_matrix",Float32MultiArray,queue_size=10)
@@ -19,7 +20,8 @@ class EstimateHMatrix:
     def buildInputMatrices(self,msg):
         self.current_points = np.array(msg.current_coordinates).reshape(int(len(msg.current_coordinates)/3),3)
         self.desired_points = np.array(msg.desired_coordinates).reshape(int(len(msg.desired_coordinates)/3),3)
-        
+        print(f'msg.current_coordinates: {msg.current_coordinates}')
+        print(f"Current points: {self.current_points}")
 
     def estimateRTMatrices(self):
         """Estimates the pose (rotation and translation) that best aligns the current points to the desired points."""
@@ -98,14 +100,25 @@ class EstimateHMatrix:
 
     def callback(self,msg):
         self.buildInputMatrices(msg) 
-        rospy.loginfo("Input matrices received.")
-        rospy.loginfo("Estimating pose...")
+        #rospy.loginfo("Input matrices received.")
+        #rospy.loginfo("Estimating pose...")
         R_est, T_est = self.estimateRTMatrices()
-        rospy.loginfo("Pose estimation completed.")
-        rospy.loginfo("Building H matrix...")
+        print(f"T = {T_est}")
+        new_rotation= np.zeros((4,4))
+        new_rotation[:3,:3] = R_est
+        new_rotation[3,3] = 1
+        degree= tf.transformations.euler_from_matrix(new_rotation)
+        print(f"R = {R_est}")
+        print(f"Radians = {degree}")
+        degree=np.degrees(degree)
+        print(f"Degrees = {degree}")
+        #print("-------------")
+        #time.sleep(2)
+        #rospy.loginfo("Pose estimation completed.")
+        #rospy.loginfo("Building H matrix...")
         H = self.buildHmatrix(R_est, T_est)
         self.publishMatrix(H)
-        rospy.loginfo("H matrix published.")
+        #rospy.loginfo("H matrix published.")
         
         #visualize the points and the error
         self.estimated_points = self.applyTransformation( R_est, T_est)

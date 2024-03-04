@@ -12,6 +12,7 @@
 #include <visp3/core/vpMouseButton.h>
 #include <visp3/gui/vpDisplayGDI.h>
 #include <visp3/vs/vpAdaptiveGain.h>
+#include <iostream>
 
 
 VisualServoingCommand::VisualServoingCommand(ros::NodeHandle& node):m_node{node}{
@@ -23,7 +24,6 @@ void VisualServoingCommand::init(){
     m_vel_pub = m_node.advertise<geometry_msgs::TwistStamped>("/visual_servoing_command/velocity_ref", 1, true);
     m_vel_command = m_node.subscribe("/vel_command", 1,
                                          &VisualServoingCommand::velCommandCallback, this);
-    
     //Eye in hand visual servoing task initialization (camera in the hand of the robot)
     //effectors are the camera and the robot is the object
     m_task.setServo(vpServo::EYEINHAND_CAMERA);
@@ -31,18 +31,11 @@ void VisualServoingCommand::init(){
     //CURRENT : the interaction matrix is computed using the current visual features
     m_task.setInteractionMatrixType(vpServo::CURRENT);
 
+    m_vs_type="pbvs";
+    std::cout << "visual servoing mode: PBVS" << std::endl;
 
-
-    if(m_vs_type == "pbvs"){
-        m_points_sub = m_node.subscribe("/h_computation/h_matrix", 1,
-                                         &VisualServoingCommand::computeCommandCallbackPbvs, this);
-        // m_points_sub = vpROSRobot::n->subscribe("/camera_frame/point_cloud_detection/icp_homo_matrix", 1000, &VisualServoingCommand::computeCommandCallbackPbvs, this);
-        ROS_INFO("visual sevoing mode: PBVS");
-    }
-    else{
-        // m_points_sub = vpROSRobot::n->subscribe("/camera_frame/detection/3d_point", 1000, &VisualServoingCommand::computeCommandCallbackIbvs, this);
-        ROS_INFO("visual sevoing mode: IBVS");
-    }
+    m_sub = m_node.subscribe("/h_computation/h_matrix", 1,
+                                    &VisualServoingCommand::computeCommandCallbackPbvs, this);
 
     // Fixed or dynamic gain used to adjust the control law in minimizing the error.
     if(m_adaptative_gain){
@@ -65,12 +58,20 @@ void VisualServoingCommand::init(){
     m_vel_twist_stamped.twist.angular.y = 0;
     m_vel_twist_stamped.twist.angular.z = 0;
 
+    ros::param::get("x_gain_value",  m_x_gain);
+    ros::param::get("y_gain_value",  m_y_gain);
+    ros::param::get("z_gain_value",  m_z_gain);
+    ros::param::get("rx_gain_value",  m_rx_gain);
+    ros::param::get("ry_gain_value",  m_ry_gain);
+    ros::param::get("rz_gain_value",  m_rz_gain);
+
+
     std::cout << "VisualServoingCommand Initialization Done" << std::endl;
 
 }
 
 void VisualServoingCommand::computeCommandCallbackPbvs(const std_msgs::Float32MultiArray& msg){
-
+    std::cout << "PBVS callback" << std::endl;
     vpHomogeneousMatrix current_homo_matrix{msg.data[0], msg.data[1], msg.data[2], msg.data[3],
                                             msg.data[4], msg.data[5], msg.data[6], msg.data[7],
                                             msg.data[8], msg.data[9], msg.data[10], msg.data[11],

@@ -1,4 +1,10 @@
 <launch>
+
+
+<arg name="simu" default=True/> 
+<param name="simu_value" value="$(arg simu)"/>
+
+
 <arg name="adaptative_gain" default="false"/>
 <param name="adaptative_gain_value" value="$(arg adaptative_gain)"/>
 
@@ -27,5 +33,12 @@
 <param name="rz_gain_value" value="$(arg rz_gain)"/>
 
 
+
+<node name="apriltag_to_graph_py" pkg="gmlaas" type="apriltag_to_graph.py" output="screen"/>
+<node name="graph_matcher_py" pkg="gmlaas" type="graph_matcher.py" output="screen"/>
+<node name="pre_h_computation_py" pkg="gmlaas" type="pre_h_computation.py" output="screen"/>
+<node name="h_computation_py" pkg="gmlaas" type="h_computation.py" output="screen"/>
 <node pkg="gmlaas" name="visual_servoing_command_node" type="visual_servoing_command_node" output="screen"/>
+
+
 </launch>
