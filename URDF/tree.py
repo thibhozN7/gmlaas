@@ -36,7 +36,7 @@ def create_joint_element(joint_id, parent_link, child_link,position):
     parent = ET.SubElement(joint, "parent", link=parent_link)
     child = ET.SubElement(joint, "child", link=child_link)
     orientation=random.uniform(-3.14, 3.14)
-    origin = ET.SubElement(joint, "origin", xyz=f"{position[0]} {position[1]} {position[2]}", rpy=f"0 0 {orientation}")
+    origin = ET.SubElement(joint, "origin", xyz=f"{position[0]} {position[1]} {position[2]}", rpy=f"0 0 0")
 
     axis = ET.SubElement(joint, "axis", xyz="0 0 1")
 
@@ -78,7 +78,7 @@ def save_urdf(tree, filename):
         tree.write(f, encoding="utf-8", xml_declaration=True, method="xml", short_empty_elements=False)
 
 if __name__ == "__main__":
-    num_cubes = 100
+    num_cubes = 22
     urdf_tree = generate_urdf(num_cubes)
     save_urdf(urdf_tree, "tree.urdf")
     print("URDF file generated successfully.")
