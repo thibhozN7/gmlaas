@@ -25,15 +25,19 @@ class VisualServoingCommand /*: public vpROSRobot*/
 {
 
 public:
-    // VisualServoingCommand(int argc, char **argv);
+
     VisualServoingCommand(ros::NodeHandle& node);
     //void computeCommandCallbackIbvs(const visual_servoing_realsense_visp::point_3dConstPtr& msg);
     void computeCommandCallbackPbvs(const std_msgs::Float32MultiArray& msg);
-    // void init(int argc, char **argv);
     void init();
     //bool point3dMsgIsNan(const visual_servoing_realsense_visp::point_3dConstPtr& msg);
     void publishVelocity(const vpColVector& vel);
-    void velCommandCallback(const geometry_msgs::TwistStampedConstPtr& vel_command_msg);
+    //void velCommandCallback(const geometry_msgs::TwistStampedConstPtr& vel_command_msg);
+    
+    void stop_visual_servoing();
+    double distance_between_matrices(const vpHomogeneousMatrix& matrix1, const vpHomogeneousMatrix& matrix2);
+    bool stop_condition_satisfied(this, const vpHomogeneousMatrix& current_homo_matrix, const vpHomogeneousMatrix& desire_homo_matrix);
+
 
     ros::Publisher m_vel_pub;
     geometry_msgs::TwistStamped m_vel_twist_stamped;
@@ -60,6 +64,7 @@ private:
     double m_rx_gain;
     double m_ry_gain;
     double m_rz_gain;
+    float m_threshold_distance;
     std::fstream m_file;
     std::fstream m_vel_file;
 };
