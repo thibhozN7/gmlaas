@@ -11,8 +11,10 @@ import os
 
 class GraphMatcher:
     def __init__(self):
-        rospy.init_node("graph_matcher_py", anonymous=False)        
-        self.m_graph_builder_data_sub = rospy.Subscriber("/graph_building/data",GraphBuilderMsg, self.callback,queue_size=10)
+        rospy.init_node("graph_matcher_py", anonymous=False)   
+        pygm.set_backend('numpy')
+        np.random.seed(1)     
+        self.m_graph_builder_data_sub = rospy.Subscriber("/graph_building/data",GraphBuilderMsg, self.callback,queue_size=1)
         self.m_graph_matcher_data_pub = rospy.Publisher("/graph_matching/data",GraphMatcherMsg, queue_size=10)
 
         self.m_header = Header()
@@ -75,8 +77,6 @@ f
         Returns:
             tuple: A tuple containing the affinity matrix (K) and the matching matrix (X).
         """
-        pygm.set_backend('numpy')
-        np.random.seed(1)
 
         rospy.loginfo(f"Current Adjacency Matrix: {self.m_current_adjacency_matrix.shape[0]}x{self.m_current_adjacency_matrix.shape[1]}")
         rospy.loginfo(f"Reference Adjacency Matrix: {self.m_reference_adjacency_matrix.shape[0]}x{self.m_reference_adjacency_matrix.shape[1]}")
