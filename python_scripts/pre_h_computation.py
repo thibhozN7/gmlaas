@@ -30,7 +30,7 @@ class PreHMatrix:
         self.m_pre_h_pub = rospy.Publisher('/h_computation/input_matrices', PreHMsg, queue_size=10)
 
         # Initialize variables
-        simu = rospy.get_param("/simu_value")
+        simu=rospy.get_param('~simu_value', True)
         if simu : 
             self.simu = "simu"
         else :

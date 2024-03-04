@@ -141,7 +141,7 @@ bool VisualServoingCommand::stop_condition_satisfied (vpHomogeneousMatrix& curre
 
 void VisualServoingCommand::stop_visual_servoing() {
     ROS_INFO("Stop criterion reached, end of servoing");
-
+    ros::shutdown();
 }  
 
 void VisualServoingCommand::publishVelocity(const vpColVector& vel){
