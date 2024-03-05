@@ -40,6 +40,7 @@ class SetPose:
 
     def update_model_state(self):
         # Recupera i dati di velocità lineare e angolare dal messaggio cmd_vel
+        # Convert from the ROS convention (x-forward, y-left, z-up) to the Gazebo convention (z-forward, -x-left, -y-up)
         linear_x = self.latest_cmd_vel_msg.linear.z
         linear_y = -self.latest_cmd_vel_msg.linear.x
         linear_z = -self.latest_cmd_vel_msg.linear.y
