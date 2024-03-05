@@ -46,7 +46,7 @@ class Graph:
             from_id = node_mapping[edge.from_node_id]
             to_id = node_mapping[edge.to_node_id]
             adjacency_matrix[from_id][to_id] = edge.length
-            adjacency_matrix[to_id][from_id] = edge.length  # Comment out for directed graphs
+            #adjacency_matrix[to_id][from_id] = edge.length  # Comment out for directed graphs
 
         return adjacency_matrix
 
