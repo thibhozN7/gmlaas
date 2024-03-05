@@ -15,7 +15,6 @@
 #include <visp/vpQuaternionVector.h>
 #include <visp/vpMath.h>
 
-
 #include <iostream>
 
 
@@ -60,8 +59,7 @@ void VisualServoingCommand::init(){
 
     //vpHomogeneousMatrix previous_homo_matrix;
 
-
-    // Initializing the velocity command to zero in all directions.
+    //Initializing the velocity command to zero in all directions.
     m_vel_twist_stamped.twist.linear.x = 0;
     m_vel_twist_stamped.twist.linear.y = 0;
     m_vel_twist_stamped.twist.linear.z = 0;
@@ -94,7 +92,8 @@ void VisualServoingCommand::computeCommandCallbackPbvs(const std_msgs::Float32Mu
 
     // check stop conditions
     if (stop_condition_satisfied(current_homo_matrix, desire_homo_matrix)) {
-        stop_visual_servoing(); // Arrêter le processus de servoing visuel
+        ROS_INFO("Stop criterion reached...");
+        stop_visual_servoing(); // nul vel command
     } 
     else {
         //updating that stop cond has been passed 
@@ -119,38 +118,24 @@ void VisualServoingCommand::computeCommandCallbackPbvs(const std_msgs::Float32Mu
         
         // Velocity command is computed there
         m_vel = m_task.computeControlLaw(); 
-        
-        //Setting linear and angular velocity components to the end effector
-        // Gains adjust the effect enforced by the velocity command
-        m_vel_twist_stamped.twist.linear.x = m_x_gain*m_vel[0]; 
-        m_vel_twist_stamped.twist.linear.y = m_y_gain*m_vel[1];
-        m_vel_twist_stamped.twist.linear.z = m_z_gain*m_vel[2];
-        m_vel_twist_stamped.twist.angular.x = m_rx_gain*m_vel[3]; //roll
-        m_vel_twist_stamped.twist.angular.y = m_ry_gain*m_vel[4]; //pitch
-        m_vel_twist_stamped.twist.angular.z = m_rz_gain*m_vel[5]; //yaw
 
-        //Publishing to /visual_servoing_command/velocity_ref topic
-        m_vel_pub.publish(m_vel_twist_stamped);
+        publishVelocity();
     }
-
 }
 
-void VisualServoingCommand::publishVelocity(const vpColVector& vel){
-    if(m_visp_publisher){
-        // vpROSRobot::setVelocity(vpRobot::REFERENCE_FRAME, vel);
-        ROS_INFO("Not Implemented For The Moment");
-    }else{
-        geometry_msgs::TwistStamped vel_twist_stamped;
-        vel_twist_stamped.twist.linear.x = m_x_gain*vel[0];
-        vel_twist_stamped.twist.linear.y = m_y_gain*vel[1];
-        vel_twist_stamped.twist.linear.z = m_z_gain*vel[2];
-        vel_twist_stamped.twist.angular.x = m_rx_gain*vel[3];
-        vel_twist_stamped.twist.angular.y = m_ry_gain*vel[4];
-        vel_twist_stamped.twist.angular.z = m_rz_gain*vel[5];
+void VisualServoingCommand::publishVelocity(){
 
-        m_vel_pub.publish(vel_twist_stamped);
-        
-    }
+    //Setting linear and angular velocity components to the end effector
+    // Gains adjust the effect enforced by the velocity command
+    m_vel_twist_stamped.twist.linear.x = m_x_gain*m_vel[0];
+    m_vel_twist_stamped.twist.linear.y = m_y_gain*m_vel[1];
+    m_vel_twist_stamped.twist.linear.z = m_z_gain*m_vel[2];
+    m_vel_twist_stamped.twist.angular.x = m_rx_gain*m_vel[3];
+    m_vel_twist_stamped.twist.angular.y = m_ry_gain*m_vel[4];
+    m_vel_twist_stamped.twist.angular.z = m_rz_gain*m_vel[5];
+    
+    //Publishing to /visual_servoing_command/velocity_ref topic
+    m_vel_pub.publish(m_vel_twist_stamped);
 }
 
 Difference VisualServoingCommand::difference_between_matrices(vpHomogeneousMatrix& matrix1, vpHomogeneousMatrix& matrix2) {
@@ -193,6 +178,14 @@ bool VisualServoingCommand::stop_condition_satisfied (vpHomogeneousMatrix& curre
 }
 
 void VisualServoingCommand::stop_visual_servoing() {
-    ROS_INFO("Stop criterion reached, end of servoing");
-    ros::shutdown();
-}  
+
+    m_vel_twist_stamped.twist.linear.x = 0;
+    m_vel_twist_stamped.twist.linear.y = 0;
+    m_vel_twist_stamped.twist.linear.z = 0;
+    m_vel_twist_stamped.twist.angular.x = 0;
+    m_vel_twist_stamped.twist.angular.y = 0;
+    m_vel_twist_stamped.twist.angular.z = 0;
+    ROS_INFO("...servoing ended");
+
+    m_vel_pub.publish(m_vel_twist_stamped);
+}

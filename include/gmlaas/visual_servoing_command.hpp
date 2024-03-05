@@ -29,7 +29,7 @@ public:
     VisualServoingCommand(ros::NodeHandle& node);
     void computeCommandCallbackPbvs(const std_msgs::Float32MultiArray& msg);
     void init();
-    void publishVelocity(const vpColVector& vel);    
+    void publishVelocity();    
     void stop_visual_servoing();
     Difference difference_between_matrices(vpHomogeneousMatrix& matrix1, vpHomogeneousMatrix& matrix2);
     bool stop_condition_satisfied (vpHomogeneousMatrix& current_homo_matrix, vpHomogeneousMatrix& desire_homo_matrix);
@@ -48,7 +48,6 @@ private:
     vpFeaturePoint m_s_desire[4];
     //vpHomogeneousMatrix previous_homo_matrix;
     std::string m_vs_type;
-    bool m_flag;
     bool m_visp_publisher;
     bool m_adaptative_gain;
     bool m_save_velocity = false;
