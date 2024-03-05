@@ -41,11 +41,11 @@ class SetPose:
     def update_model_state(self):
         # Recupera i dati di velocità lineare e angolare dal messaggio cmd_vel
         linear_x = self.latest_cmd_vel_msg.linear.z
-        linear_y = self.latest_cmd_vel_msg.linear.y
-        linear_z = self.latest_cmd_vel_msg.linear.x
+        linear_y = -self.latest_cmd_vel_msg.linear.x
+        linear_z = -self.latest_cmd_vel_msg.linear.y
         angular_x = self.latest_cmd_vel_msg.angular.z
-        angular_y = self.latest_cmd_vel_msg.angular.y
-        angular_z = self.latest_cmd_vel_msg.angular.x
+        angular_y = -self.latest_cmd_vel_msg.angular.x
+        angular_z = -self.latest_cmd_vel_msg.angular.y
 
         # Imposta le velocità lineari e angolari nel messaggio di stato
         self.state_msg.twist.linear.x = linear_x

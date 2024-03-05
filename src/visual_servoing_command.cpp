@@ -46,7 +46,7 @@ void VisualServoingCommand::init(){
         m_task.setLambda(vpAdaptiveGain());
         std::cout << "Adaptive Gain initialization" << std::endl;
     }else{
-        m_task.setLambda(0.1);
+        m_task.setLambda(0.3);
         std::cout << "Lambda gain initialization :" << m_lambda_gain << std::endl;
     }
 
