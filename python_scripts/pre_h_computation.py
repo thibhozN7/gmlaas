@@ -82,7 +82,8 @@ class PreHMatrix:
         # Calculate the current and desired coordinates for the isomorphism list
         print(f"Isomorphism list: {self.isomorphism_list}")
         print(f"len of isomorphism list: {len(self.isomorphism_list)}")
-        for i in range(len(self.isomorphism_list) - 1):
+        c=0
+        for i in range(len(self.isomorphism_list)-1):
 
             ref_id = self.m_reference_index_matrix[self.isomorphism_list[i]] # Get the reference tag ID
             if ref_id in self.m_desired_dict.keys(): # Check if the reference tag ID is in the desired dictionary
@@ -92,6 +93,9 @@ class PreHMatrix:
                 cur_id = self.current_indexed_matrix[i] # Get the current tag ID
                 self.m_current_matrix.append(self.m_current_dict[cur_id]) # Append the current coordinates
                 print(f"Current ID: {cur_id} - Current coordinates: {self.m_current_dict[cur_id]}")
+                if ref_id == cur_id:
+                    c+=1
+        print(f"Score: {100*c/len(self.isomorphism_list)} %")
         
         check = (len(self.m_current_matrix) == len(self.m_desired_matrix)) # Check if the current and desired coordinates matrices match
         

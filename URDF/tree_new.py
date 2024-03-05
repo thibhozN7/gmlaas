@@ -53,19 +53,11 @@ def generate_urdf(num_cubes):
     color[0] = create_cube_color(0, "testing/AprilTag_tag36h11_ID_0000")
 
     # Generating tree structure
-    scaling_x = 0.4
-    scaling_y = 0.3
-    scaling_z = 0.3
     for i in range(1, num_cubes):
         parent_id = (i - 1) // 2
-        x = scaling_x
-        y = scaling_y
-        z = scaling_z
-        cube_position = (random.uniform(-x, x), random.uniform(-y*0.75,y), random.uniform(z, z))
+        cube_position = (random.uniform(-2, 2), random.uniform(-0.5,0.5), random.uniform(0.3, 1))
         links[i] = create_link_element(i)
-        scaling_x+=0.07
-        scaling_y+=0.03
-        scaling_z+=0.04
+        
         joints[i] = create_joint_element(i, f"link_{parent_id}", f"link_{i}", cube_position)
         id=str(i).zfill(4)
         color[i] = create_cube_color(i, f"testing/AprilTag_tag36h11_ID_{id}")
@@ -86,7 +78,7 @@ def save_urdf(tree, filename):
         tree.write(f, encoding="utf-8", xml_declaration=True, method="xml", short_empty_elements=False)
 
 if __name__ == "__main__":
-    num_cubes = 22
+    num_cubes = 15
     urdf_tree = generate_urdf(num_cubes)
     save_urdf(urdf_tree, "tree.urdf")
     print("URDF file generated successfully.")
