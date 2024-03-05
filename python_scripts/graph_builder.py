@@ -19,6 +19,10 @@ class Edge:
         dy = to_node.y - from_node.y
         dz = to_node.z - from_node.z
         self.length = math.sqrt(dx ** 2 + dy ** 2 + dz ** 2)
+        theta = math.atan2(dy, dx)  # Azimuthal angle
+        phi = math.acos(dz / self.length) if self.length != 0 else 0  # Polar angle
+        return(self.length, theta, phi)
+    
 class Graph:
     def __init__(self):
         self.nodes = []
