@@ -4,7 +4,6 @@
 #include <sensor_msgs/Image.h>
 #include <std_msgs/Float32MultiArray.h>
 #include <rosgraph_msgs/Clock.h> // Include the necessary header file
-//#include "visual_servoing_realsense_visp/point_3d.h"
 
 #include <visp3/visual_features/vpFeatureBuilder.h>
 #include <visp3/vs/vpServo.h>
@@ -17,9 +16,10 @@
 #include <tf/transform_broadcaster.h>
 #include <eigen_conversions/eigen_msg.h>
 
-const std::vector<double> K = {605.132568359375, 0.0, 322.9114074707031,
-			              0.0, 604.875244140625, 239.2445526123047,
-			              0.0, 0.0, 1.0};
+struct Difference {
+    double distance;
+    double orientation_difference;
+};
 
 class VisualServoingCommand /*: public vpROSRobot*/ 
 {
@@ -27,16 +27,13 @@ class VisualServoingCommand /*: public vpROSRobot*/
 public:
 
     VisualServoingCommand(ros::NodeHandle& node);
-    //void computeCommandCallbackIbvs(const visual_servoing_realsense_visp::point_3dConstPtr& msg);
     void computeCommandCallbackPbvs(const std_msgs::Float32MultiArray& msg);
     void init();
     void publishVelocity(const vpColVector& vel);    
     void stop_visual_servoing();
-    double distance_between_matrices(vpHomogeneousMatrix& matrix1, vpHomogeneousMatrix& matrix2);
-    bool stop_condition_satisfied(vpHomogeneousMatrix& current_homo_matrix, vpHomogeneousMatrix& desire_homo_matrix);
-
-
-
+    Difference difference_between_matrices(vpHomogeneousMatrix& matrix1, vpHomogeneousMatrix& matrix2);
+    bool stop_condition_satisfied (vpHomogeneousMatrix& current_homo_matrix, vpHomogeneousMatrix& desire_homo_matrix);
+    
     ros::Publisher m_vel_pub;
     geometry_msgs::TwistStamped m_vel_twist_stamped;
     bool m_interrupt_flag = true;
@@ -49,6 +46,7 @@ private:
     vpServo m_task;
     vpFeaturePoint m_s[4];
     vpFeaturePoint m_s_desire[4];
+    //vpHomogeneousMatrix previous_homo_matrix;
     std::string m_vs_type;
     bool m_flag;
     bool m_visp_publisher;
@@ -61,7 +59,9 @@ private:
     double m_rx_gain;
     double m_ry_gain;
     double m_rz_gain;
+    
     float threshold_distance;
-    std::fstream m_file;
-    std::fstream m_vel_file;
+    float threshold_orientation;
+    Difference desired_diff;
+    Difference variation_diff;
 };

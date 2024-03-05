@@ -12,6 +12,10 @@
 #include <visp3/core/vpMouseButton.h>
 #include <visp3/gui/vpDisplayGDI.h>
 #include <visp3/vs/vpAdaptiveGain.h>
+#include <visp/vpQuaternionVector.h>
+#include <visp/vpMath.h>
+
+
 #include <iostream>
 
 
@@ -35,7 +39,6 @@ void VisualServoingCommand::init(){
 
     m_sub = m_node.subscribe("/h_computation/h_matrix", 1,
                                     &VisualServoingCommand::computeCommandCallbackPbvs, this);
-    //clock_sub = m_node.subscribe("/clock", 1, &VisualServoingCommand::clockCallback);
     
     // Fixed or dynamic gain used to adjust the control law in minimizing the error.
     ros::param::get("adaptative_gain_value",  m_adaptative_gain);
@@ -50,9 +53,13 @@ void VisualServoingCommand::init(){
         std::cout << "Lambda gain initialization :" << m_lambda_gain << std::endl;
     }
 
-    this->threshold_distance = 0.02; //2 centimeters 
+    threshold_distance = 0.1; //10 centimeters
+    threshold_orientation = 5; //5 degres 
+    
+    this-> desired_diff = {threshold_distance, threshold_orientation};
 
-    m_flag = true; // for IBVS command computation
+    //vpHomogeneousMatrix previous_homo_matrix;
+
 
     // Initializing the velocity command to zero in all directions.
     m_vel_twist_stamped.twist.linear.x = 0;
@@ -71,7 +78,6 @@ void VisualServoingCommand::init(){
 
 
     std::cout << "VisualServoingCommand Initialization Done" << std::endl;
-
 }
 
 void VisualServoingCommand::computeCommandCallbackPbvs(const std_msgs::Float32MultiArray& msg){
@@ -86,11 +92,14 @@ void VisualServoingCommand::computeCommandCallbackPbvs(const std_msgs::Float32Mu
                                            0, 0, 1, 0,
                                            0, 0, 0, 1};
 
-    // Vérifier le critère d'arrêt
+    // check stop conditions
     if (stop_condition_satisfied(current_homo_matrix, desire_homo_matrix)) {
         stop_visual_servoing(); // Arrêter le processus de servoing visuel
     } 
     else {
+        //updating that stop cond has been passed 
+        //previous_homo_matrix = current_homo_matrix;
+
         // caracteristics extraction : translation (t) and rotation (tu)
         vpFeatureTranslation t(vpFeatureTranslation::cdMc);
         vpFeatureThetaU tu(vpFeatureThetaU::cdRc);
@@ -126,30 +135,6 @@ void VisualServoingCommand::computeCommandCallbackPbvs(const std_msgs::Float32Mu
 
 }
 
-double VisualServoingCommand::distance_between_matrices(vpHomogeneousMatrix& matrix1, vpHomogeneousMatrix& matrix2) {
-    // Get the translation vectors from both matrices
-    vpTranslationVector translation1 = matrix1.getTranslationVector();
-    vpTranslationVector translation2 = matrix2.getTranslationVector();
-
-    // Calculate the difference between the translation vectors
-    vpTranslationVector diff_translation = translation1 - translation2;
-
-    // Calculate the Euclidean norm of the difference
-    double distance = diff_translation.euclideanNorm();
-    
-    return distance;
-}
-
-bool VisualServoingCommand::stop_condition_satisfied (vpHomogeneousMatrix& current_homo_matrix, vpHomogeneousMatrix& desire_homo_matrix) {
-    // check stop criterion for servoing()
-    return distance_between_matrices(current_homo_matrix, desire_homo_matrix) <= this->threshold_distance;
-}
-
-void VisualServoingCommand::stop_visual_servoing() {
-    ROS_INFO("Stop criterion reached, end of servoing");
-    ros::shutdown();
-}  
-
 void VisualServoingCommand::publishVelocity(const vpColVector& vel){
     if(m_visp_publisher){
         // vpROSRobot::setVelocity(vpRobot::REFERENCE_FRAME, vel);
@@ -168,59 +153,46 @@ void VisualServoingCommand::publishVelocity(const vpColVector& vel){
     }
 }
 
+Difference VisualServoingCommand::difference_between_matrices(vpHomogeneousMatrix& matrix1, vpHomogeneousMatrix& matrix2) {
+    // // Convert the homogeneous matrices to quaternion vectors
+    // vpQuaternionVector orientation1, orientation2;
+    // orientation1.buildFrom(matrix1);
+    // orientation2.buildFrom(matrix2);
 
-/////IBVS 
+    // // Calculate the orientation difference in degrees
+    // double orientation_difference = vpMath::deg(orientation1, orientation2);
+    double orientation_difference = 0;
 
-// void VisualServoingCommand::computeCommandCallbackIbvs(const visual_servoing_realsense_visp::point_3dConstPtr& msg){
+    // Calculate the distance between translations
+    vpTranslationVector translation1, translation2;
+    translation1.buildFrom(matrix1);
+    translation2.buildFrom(matrix2);
+    double distance = std::sqrt((translation1 - translation2).sumSquare());
 
-//     if(point3dMsgIsNan(msg)){
-//         vpROSRobot::setVelocity(vpRobot::REFERENCE_FRAME, vpColVector(6, 0.0));
-// 	}else{
-//         try {
-//             for(size_t i =0; i<4; i++){
-//                 m_point[i].set_X(msg->p_3d[i].x);
-//                 m_point[i].set_Y(msg->p_3d[i].y);
-//                 m_point[i].set_Z(msg->p_3d[i].z);
-//                 m_point[i].set_W(1);
-//                 m_point[i].projection();
-//             }
+    Difference difference;
+    difference.orientation_difference = orientation_difference;
+    difference.distance = distance;
 
-//             if(m_flag){
-//                 for(size_t i = 0; i<4; i++){
-//                     vpFeatureBuilder::create(m_s_desire[i], m_point[i]);
-//                 }
-//                 m_flag=false;
-//             }
-//             else{
-//                 for(size_t i =0; i<4; i++){
-//                     vpFeatureBuilder::create(m_s[i], m_point[i]);
-//                 }
-//             }
-
-//             for(size_t i = 0; i<4; i++){
-//                 m_task.addFeature(m_s[i], m_s_desire[i]);
-//             }
-
-//             m_vel = m_task.computeControlLaw();
-//             publishVelocity(m_vel);
-
-//         }catch(const vpException &e){
-//             std::cout << "Catch an exception: " << e << std::endl;
-//         }
-//     }
-// }
+    return difference;
+}
 
 
-// bool VisualServoingCommand::point3dMsgIsNan(const visual_servoing_realsense_visp::point_3dConstPtr& msg){
+bool VisualServoingCommand::stop_condition_satisfied (vpHomogeneousMatrix& current_homo_matrix, vpHomogeneousMatrix& desire_homo_matrix) {
+    bool stop;
+    //Difference c_diff = difference_between_matrices(current_homo_matrix, previous_homo_matrix);; // checking previous with current frame diff for blocked camera case
+    Difference d_diff = difference_between_matrices(current_homo_matrix, desire_homo_matrix);; // checking current with desired frame diff for convergence case
 
-//     if(msg){
-//         for(const auto& p : msg->p_3d){
-//             if(!(isnan(p.x) && isnan(p.y) && isnan(p.z))){
-//                 return false;
-//             }
-//         }
-//         return true;
-//     }else{
-//         return true;
-//     }
-// }    
+    if (d_diff.distance <= this-> desired_diff.distance){
+        //if (std::abs(d_diff.orientation_difference) <= std::abs(this->desired_diff.orientation_difference)){stop = true;}
+        stop = true;
+    }
+    // if (c_diff.distance <= this-> variation_diff.distance){stop = true};
+    else {stop = false;}
+    
+    return stop;
+}
+
+void VisualServoingCommand::stop_visual_servoing() {
+    ROS_INFO("Stop criterion reached, end of servoing");
+    ros::shutdown();
+}  
