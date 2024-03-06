@@ -18,7 +18,7 @@ class Edge:
         dx = to_node.x - from_node.x
         dy = to_node.y - from_node.y
         dz = to_node.z - from_node.z
-        self.length = math.sqrt(dx ** 2 + dy ** 2 + dz ** 2)
+        self.length = 10*math.sqrt(dx ** 2 + dy ** 2 + dz ** 2)
 class Graph:
     def __init__(self):
         self.nodes = []
@@ -46,7 +46,7 @@ class Graph:
             from_id = node_mapping[edge.from_node_id]
             to_id = node_mapping[edge.to_node_id]
             adjacency_matrix[from_id][to_id] = edge.length
-            #adjacency_matrix[to_id][from_id] = edge.length  # Comment out for directed graphs
+            adjacency_matrix[to_id][from_id] = -edge.length  # Comment out for directed graphs
 
         return adjacency_matrix
 

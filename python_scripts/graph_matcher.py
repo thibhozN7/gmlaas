@@ -19,7 +19,6 @@ class GraphMatcher:
   
         # Initialize variables
         simu=rospy.get_param('~simu_value', True)
-        print(f"simu: {simu}")
         if simu : 
             self.simu = "simu"
         else :
@@ -62,7 +61,6 @@ f
                 reference_adjacency_matrix = [float(x) for x in row[3].replace("(","").replace(")","").split(", ")]
                 size=int(row[2])
         shaped_matrix = self.buildMatrix(reference_adjacency_matrix, size, size)
-        rospy.loginfo("Reference Adjacency Matrix initialized")  
         return shaped_matrix
     
     def listener(self, msg):
@@ -86,10 +84,6 @@ f
         Returns:
             tuple: A tuple containing the affinity matrix (K) and the matching matrix (X).
         """
-
-        rospy.loginfo(f"Current Adjacency Matrix: {self.m_current_adjacency_matrix.shape[0]}x{self.m_current_adjacency_matrix.shape[1]}")
-        rospy.loginfo(f"Reference Adjacency Matrix: {self.m_reference_adjacency_matrix.shape[0]}x{self.m_reference_adjacency_matrix.shape[1]}")
-
         n1 = np.array(self.m_current_adjacency_matrix.shape)
         n2 = np.array(self.m_reference_adjacency_matrix.shape)
         conn1, edge1 = pygm.utils.dense_to_sparse(self.m_current_adjacency_matrix)
@@ -143,7 +137,6 @@ f
         custom_msg.coordinate_matrix = self.m_coordinate_matrix
 
         self.m_graph_matcher_data_pub.publish(custom_msg)
-        rospy.loginfo("Graph Matching Data Published")
     
     
     def callback(self, msg):

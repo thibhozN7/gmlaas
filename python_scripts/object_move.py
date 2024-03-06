@@ -4,10 +4,17 @@ import rospy
 from geometry_msgs.msg import TwistStamped
 from gazebo_msgs.msg import ModelState
 from gazebo_msgs.msg import ModelStates
-
-class SetPose:
+import subprocess
+class ObjectMove:
     def __init__(self):
-        rospy.init_node('set_pose',anonymous=False)
+        
+        # rospy.get_param('~rosbag_value',rosbag)
+        # if rosbag == "save":
+        #     command = ['rosbag', 'record', '-O', 'my_bagfile.bag', '/data/pre_h_computation', '/gazebo/model_states']
+        #     process = subprocess.Popen(command)
+        
+
+        rospy.init_node('object_move_py',anonymous=False)
         self.state_msg = ModelState()
         self.state_msg.model_name = 'robot'
         self.state_msg.reference_frame= 'world'
@@ -40,12 +47,13 @@ class SetPose:
 
     def update_model_state(self):
         # Recupera i dati di velocità lineare e angolare dal messaggio cmd_vel
+        # Convert from the ROS convention (x-forward, y-left, z-up) to the Gazebo convention (z-forward, -x-left, -y-up)
         linear_x = self.latest_cmd_vel_msg.linear.z
-        linear_y = self.latest_cmd_vel_msg.linear.y
-        linear_z = self.latest_cmd_vel_msg.linear.x
+        linear_y = -self.latest_cmd_vel_msg.linear.x
+        linear_z = -self.latest_cmd_vel_msg.linear.y
         angular_x = self.latest_cmd_vel_msg.angular.z
-        angular_y = self.latest_cmd_vel_msg.angular.y
-        angular_z = self.latest_cmd_vel_msg.angular.x
+        angular_y = -self.latest_cmd_vel_msg.angular.x
+        angular_z = -self.latest_cmd_vel_msg.angular.y
 
         # Imposta le velocità lineari e angolari nel messaggio di stato
         self.state_msg.twist.linear.x = linear_x
@@ -66,7 +74,7 @@ class SetPose:
 
 def main():
     try:
-        set_pose = SetPose()
+        object_move = ObjectMove()
         rospy.spin()  # Mantieni il nodo in esecuzione
     except rospy.ROSInterruptException:
         pass
