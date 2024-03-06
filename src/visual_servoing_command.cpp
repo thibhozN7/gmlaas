@@ -34,7 +34,6 @@ void VisualServoingCommand::init(){
     m_task.setInteractionMatrixType(vpServo::CURRENT);
 
     m_vs_type="pbvs";
-    std::cout << "visual servoing mode: PBVS" << std::endl;
 
     m_sub = m_node.subscribe("/h_computation/h_matrix", 1,
                                     &VisualServoingCommand::computeCommandCallbackPbvs, this);
@@ -74,12 +73,9 @@ void VisualServoingCommand::init(){
     ros::param::get("ry_gain_value",  m_ry_gain);
     ros::param::get("rz_gain_value",  m_rz_gain);
 
-
-    std::cout << "VisualServoingCommand Initialization Done" << std::endl;
 }
 
 void VisualServoingCommand::computeCommandCallbackPbvs(const std_msgs::Float32MultiArray& msg){
-    std::cout << "PBVS callback" << std::endl;
     vpHomogeneousMatrix current_homo_matrix{msg.data[0], msg.data[1], msg.data[2], msg.data[3],
                                             msg.data[4], msg.data[5], msg.data[6], msg.data[7],
                                             msg.data[8], msg.data[9], msg.data[10], msg.data[11],
