@@ -1,0 +1,10 @@
+<launch>
+
+
+<arg name="rosbag" default=""/> 
+<param name="rosbag_value" value="$(arg rosbag)"/>
+
+
+<node name="object_move_py" pkg="gmlaas" type="object_move.py" output="screen"/>
+
+</launch>

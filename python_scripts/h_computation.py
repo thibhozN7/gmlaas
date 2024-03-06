@@ -60,7 +60,8 @@ class EstimateHMatrix:
         # Convert the rotation matrix to euler angles
         degree= tf.transformations.euler_from_matrix(new_rotation)
         degree=np.degrees(degree) 
-        H = self.buildHmatrix(R_est, T_est)        
+        H = self.buildHmatrix(R_est, T_est)  
+        self.publishMatrix(H)      
     
 if __name__ == "__main__":
     estimate_h_matrix=EstimateHMatrix()

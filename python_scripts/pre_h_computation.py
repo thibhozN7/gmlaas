@@ -6,6 +6,8 @@ from std_msgs.msg import Float32MultiArray, MultiArrayDimension
 from message_filters import Subscriber, TimeSynchronizer
 from gmlaas.msg import PreHMsg
 from gmlaas.msg import GraphMatcherMsg
+from gmlaas.msg import PreHData
+
 from apriltag_ros.msg import AprilTagDetectionArray
 
 import os
@@ -23,6 +25,8 @@ class PreHMatrix:
 
         # Define publisher
         self.m_pre_h_pub = rospy.Publisher('/h_computation/input_matrices', PreHMsg, queue_size=10)
+
+        self.m_data_pub = rospy.Publisher('/data/pre_h_computation', PreHData, queue_size=10)
 
         # Initialize variables
         simu=rospy.get_param('~simu_value', True)
@@ -68,7 +72,7 @@ class PreHMatrix:
 
     def calculateCoordinates(self):
         # Calculate the current and desired coordinates for the isomorphism list
-        c=0
+        sc=0
         for i in range(len(self.isomorphism_list)-1):
 
             ref_id = self.m_reference_index_matrix[self.isomorphism_list[i]] # Get the reference tag ID
@@ -77,7 +81,9 @@ class PreHMatrix:
                 cur_id = self.current_indexed_matrix[i] # Get the current tag ID
                 self.m_current_matrix.append(self.m_current_dict[cur_id]) # Append the current coordinates
                 if ref_id == cur_id:
-                    c+=1
+                    sc+=1
+
+        self.score = sc/len(self.isomorphism_list)*100
         
         check = (len(self.m_current_matrix) == len(self.m_desired_matrix)) # Check if the current and desired coordinates matrices match
         
@@ -93,6 +99,14 @@ class PreHMatrix:
         msg.desired_coordinates = list(np.array(desired_coordinates).flatten())
         self.m_pre_h_pub.publish(msg)
 
+    def publishData(self):
+        msg_data=PreHData()
+        msg_data.num_current_points= int(len(self.isomorphism_list))
+        msg_data.num_matched_points=int(len(self.m_current_matrix))
+        msg_data.score = int(self.score)
+        self.m_data_pub.publish(msg_data)
+
+
     def callback(self, msg):
         self.m_current_dict = {}
         self.m_desired_dict = {}
@@ -106,6 +120,7 @@ class PreHMatrix:
         self.buildDesiredTagDict()
         self.calculateCoordinates()
         self.publishMatrix(self.m_current_matrix, self.m_desired_matrix)
+        self.publishData()
         
 if __name__ == "__main__":
     # Create an instance of PreHMatrix and start the ROS node
