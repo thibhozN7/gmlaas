@@ -96,7 +96,7 @@ f
         conn2, edge2 = pygm.utils.dense_to_sparse(self.m_reference_adjacency_matrix)
 
         gaussian_aff = functools.partial(pygm.utils.gaussian_aff_fn, sigma=.1)
-        K = pygm.utils.build_aff_mat(None, edge1, conn1, None, edge2, conn2, None, None, None, None, edge_aff_fn=gaussian_aff)
+        K = pygm.utils.build_aff_mat(None, edge1, conn1, None, edge2, conn2, n1, None, n2, None, edge_aff_fn=gaussian_aff)
         X = pygm.rrwm(K, n1, n2)
         return K, X
     

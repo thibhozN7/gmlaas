@@ -86,7 +86,7 @@ def save_urdf(tree, filename):
         tree.write(f, encoding="utf-8", xml_declaration=True, method="xml", short_empty_elements=False)
 
 if __name__ == "__main__":
-    num_cubes = 22
+    num_cubes = 15
     urdf_tree = generate_urdf(num_cubes)
     save_urdf(urdf_tree, "tree.urdf")
     print("URDF file generated successfully.")
