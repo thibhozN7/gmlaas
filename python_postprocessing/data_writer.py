@@ -5,7 +5,8 @@ import csv
 import tf.transformations as tf
 import argparse
 
-# Parse command line arguments
+
+# Parse command line arguments 'param'
 parser = argparse.ArgumentParser(description='Process some integers.')
 parser.add_argument('param', type=str, help='parameter for file names')
 args = parser.parse_args()
@@ -28,24 +29,25 @@ filewriter3 = csv.writer(csvfile3, delimiter=';')
 filewriter3.writerow(['time', 'x', 'y', 'z', 'roll', 'pitch', 'yaw'])
 
 # Iterate through messages in the bag file
+last_time_sec = 0
 for topic, msg, t in bag.read_messages(topics=['/data/pre_h_computation','/gazebo/model_states']):
-    time_nsec=t.to_sec()
-    if topic == '/data/pre_h_computation':
-        # Process data for the first topic
-        data_topic1 = [time_nsec, msg.num_current_points, msg.num_matched_points, msg.score]
-        filewriter1.writerow(data_topic1)
+    time_sec=t.to_sec()
+    if time_sec != last_time_sec:
+        if topic == '/data/pre_h_computation':
+            # Process data for the first topic
+            data_topic1 = [time_sec, msg.num_current_points, msg.num_matched_points, msg.score]
+            filewriter1.writerow(data_topic1)
 
-    elif topic == "/gazebo/model_states":
-        obj_name= 'robot'
-        pose_id = 1
-        x = msg.pose[pose_id].position.x
-        y = msg.pose[pose_id].position.y
-        z = msg.pose[pose_id].position.z
-        orientation = msg.pose[pose_id].orientation
-        roll, pitch, yaw = tf.euler_from_quaternion([orientation.x, orientation.y, orientation.z, orientation.w])
-        filewriter3.writerow([time_nsec, x, y, z, roll, pitch, yaw])
-
-
+        elif topic == "/gazebo/model_states":
+            obj_name= 'robot'
+            pose_id = 1
+            x = msg.pose[pose_id].position.x
+            y = msg.pose[pose_id].position.y
+            z = msg.pose[pose_id].position.z
+            orientation = msg.pose[pose_id].orientation
+            roll, pitch, yaw = tf.euler_from_quaternion([orientation.x, orientation.y, orientation.z, orientation.w])
+            filewriter3.writerow([time_sec, x, y, z, roll, pitch, yaw])
+    last_time_sec = time_sec
 # Close the CSV files and the ROS bag file
 print("Data written to CSV files.")
 csvfile1.close()
