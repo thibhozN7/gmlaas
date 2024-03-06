@@ -10,8 +10,10 @@ find_package(catkin REQUIRED COMPONENTS
   apriltag_ros
   geometry_msgs
   cv_bridge
+  gazebo_ros
 )
 find_package(VISP REQUIRED)
+find_package(gazebo REQUIRED)
 
 add_message_files(
   FILES
@@ -24,7 +26,7 @@ generate_messages(
    std_msgs  # Or other packages containing msgs
  )
  
-catkin_package(CATKIN_DEPENDS roscpp geometry_msgs cv_bridge message_runtime std_msgs)
+catkin_package(CATKIN_DEPENDS roscpp geometry_msgs cv_bridge message_runtime std_msgs gazebo_ros)
 
 set(gmlaas_INCLUDE_DIR "include/gmlaas")
 set(gmlaas_SOURCE_DIR "src")
@@ -34,6 +36,7 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
   ${gmlaas_INCLUDE_DIR}
   ${VISP_INCLUDE_DIRS}
+  ${GAZEBO_INCLUDE_DIRS}
 )
 
 add_executable(visual_servoing_command_node
@@ -46,3 +49,4 @@ add_executable(visual_servoing_command_node
 target_link_libraries(visual_servoing_command_node ${catkin_LIBRARIES})
 target_link_libraries(visual_servoing_command_node ${VISP_LIBRARIES})
 
+install(DIRECTORY gazebo/models DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
