@@ -34,5 +34,5 @@
 
   <!-- push tree_description to factory and spawn tree model in gazebo -->
   <node name="urdf_spawner_tree" pkg="gazebo_ros" type="spawn_model"
-        args="-x 1.9421 -y -0.3649 -z 1.68518 -Y 1.569780 -unpause -urdf -model target_tree -param tree_description" respawn="false" output="screen" />
+        args="-x 2.686933 -y -0.254398 -z 1.685180 -Y -1.546215 -unpause -urdf -model target_tree -param tree_description" respawn="false" output="screen" />
 </launch>
