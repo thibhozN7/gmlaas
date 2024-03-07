@@ -7,7 +7,7 @@ import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.mplot3d import Axes3D
 from gmlaas.msg import PreHMsg
-
+from gmlaas.msg import HData
 
 import time
 import tf
@@ -16,7 +16,7 @@ class EstimateHMatrix:
         rospy.init_node("h_computation_py",anonymous=False)
         self.m_points_sub = rospy.Subscriber("/h_computation/input_matrices",PreHMsg,self.callback)
         self.m_h_matrix_pub = rospy.Publisher("/h_computation/h_matrix",Float32MultiArray,queue_size=10)
-        
+        self.m_data_pub = rospy.Publisher("/data/h_computation",HData,queue_size=10)
 
     def buildInputMatrices(self,msg):
         self.current_points = np.array(msg.current_coordinates).reshape(int(len(msg.current_coordinates)/3),3)
@@ -49,7 +49,7 @@ class EstimateHMatrix:
     
     def convertDegree(self,R):
         new_rotation= np.zeros((4,4))
-        new_rotation[:3,:3] = R_est
+        new_rotation[:3,:3] = R
         new_rotation[3,3] = 1
         degree= tf.transformations.euler_from_matrix(new_rotation)
         angle=np.degrees(degree) 
@@ -66,12 +66,14 @@ class EstimateHMatrix:
         msg_data.T = T_est
         msg_data.R = R_est.flatten()
         msg_data.R_degree = self.convertDegree(R_est)
+        self.m_data_pub.publish(msg_data)
     
     def callback(self,msg):
         self.buildInputMatrices(msg) 
         R_est, T_est = self.estimateRTMatrices()
         H = self.buildHmatrix(R_est, T_est)  
-        self.publishMatrix(H)      
+        self.publishMatrix(H)  
+        self.publishData(R_est,T_est)    
     
 if __name__ == "__main__":
     estimate_h_matrix=EstimateHMatrix()

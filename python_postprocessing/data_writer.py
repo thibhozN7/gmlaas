@@ -23,23 +23,33 @@ filewriter1 = csv.writer(csvfile1, delimiter=';')
 filewriter1.writerow(['Time', 'Number of visible nodes', 'number of matched nodes', 'Score'])
 
 # Open CSV
-csvfile3 = open(f"{package_dir}/datasets/data/{args.param}_trajectory.csv", "w")
+csvfile2 = open(f"{package_dir}/datasets/data/{args.param}_H_data.csv", "w")
+filewriter2 = csv.writer(csvfile2, delimiter=';')
+filewriter2.writerow(['Time', 'T', 'R', 'R_degree'])
+
+# Open CSV
+csvfile3 = open(f"{package_dir}/datasets/data/{args.param}_trajectory_data.csv", "w")
 filewriter3 = csv.writer(csvfile3, delimiter=';')
 filewriter3.writerow(['time', 'x', 'y', 'z', 'roll', 'pitch', 'yaw'])
 
 # Iterate through messages in the bag file
 last_time_sec = 0
-for topic, msg, t in bag.read_messages(topics=['/data/pre_h_computation','/gazebo/model_states']):
+for topic, msg, t in bag.read_messages(topics=['/data/pre_h_computation','/data/h_computation','/gazebo/model_states']):
     time_sec=t.to_sec()
     if time_sec != last_time_sec:
         if topic == '/data/pre_h_computation':
-            # Process data for the first topic
+            # Process data for pre_h_computation topic
             data_topic1 = [time_sec, msg.num_current_points, msg.num_matched_points, msg.score]
             filewriter1.writerow(data_topic1)
 
+        elif topic == "/data/h_computation":
+            # Process data for h_computation topic
+            data_topic2 = [time_sec, msg.T, msg.R, msg.R_degree]
+            filewriter2.writerow(data_topic2)
+
         elif topic == "/gazebo/model_states":
-            obj_name= 'robot'
-            pose_id = 1
+            # Process data for gazebo/model_states topic
+            pose_id = msg.name.index("robot")
             x = msg.pose[pose_id].position.x
             y = msg.pose[pose_id].position.y
             z = msg.pose[pose_id].position.z

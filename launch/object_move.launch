@@ -1,7 +1,7 @@
 <launch>
 
 
-<arg name="rosbag" default=""/> 
+<arg name="rosbag" default="False"/> 
 <param name="rosbag_value" value="$(arg rosbag)"/>
 
 
