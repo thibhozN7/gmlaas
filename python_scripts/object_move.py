@@ -5,12 +5,18 @@ from geometry_msgs.msg import TwistStamped
 from gazebo_msgs.msg import ModelState
 from gazebo_msgs.msg import ModelStates
 import subprocess
+import os
+
+current_dir = os.path.realpath(__file__)
+package_dir = os.path.dirname(os.path.dirname(current_dir))
+
 class ObjectMove:
     def __init__(self):
-        
-        rosbag = rospy.get_param('~rosbag_value', 'False')       
+        rosbag = rospy.get_param('/object_move_py/rosbag_value')
+        print(rosbag)   
+
         if rosbag == True:
-            command = ['rosbag', 'record', '-O', 'my_bagfile.bag', '/data/pre_h_computation', '/gazebo/model_states']
+            command = ['rosbag', 'record', '-O', f"{package_dir}/datasets/rosbags/my_bagfile.bag", '/data/pre_h_computation', '/gazebo/model_states']
             process = subprocess.Popen(command)
         
 

@@ -15,7 +15,7 @@ class EstimateHMatrix:
     def __init__(self) :
         rospy.init_node("h_computation_py",anonymous=False)
         self.m_points_sub = rospy.Subscriber("/h_computation/input_matrices",PreHMsg,self.callback)
-        self.m_h_matrix_pub = rospy.Publisher("/h_computation/h_matrix",Float32MultiArray,queue_size=10)
+        self.m_h_matrix_pub = rospy.Publisher("/h_computation/h_matrix",Float64MultiArray,queue_size=10)
         self.m_data_pub = rospy.Publisher("/data/h_computation",HData,queue_size=10)
 
     def buildInputMatrices(self,msg):
