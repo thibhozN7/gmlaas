@@ -2,7 +2,7 @@
 
 #include "ros/ros.h"
 #include <sensor_msgs/Image.h>
-#include <std_msgs/Float32MultiArray.h>
+#include <std_msgs/Float64MultiArray.h>
 #include <rosgraph_msgs/Clock.h> // Include the necessary header file
 
 #include <visp3/visual_features/vpFeatureBuilder.h>
@@ -27,7 +27,7 @@ class VisualServoingCommand /*: public vpROSRobot*/
 public:
 
     VisualServoingCommand(ros::NodeHandle& node);
-    void computeCommandCallbackPbvs(const std_msgs::Float32MultiArray& msg);
+    void computeCommandCallbackPbvs(const std_msgs::Float64MultiArray& msg);
     void init();
     void publishVelocity();    
     void stop_visual_servoing();
