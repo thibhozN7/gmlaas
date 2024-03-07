@@ -1,5 +1,4 @@
 import os
-import rospy
 import rosbag
 import csv
 import tf.transformations as tf
