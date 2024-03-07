@@ -1,0 +1,4 @@
+<launch>
+    <param name="robot_description" textfile="$(find gmlaas)/urdf/tree_with_branches.urdf" />
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find realsense2_description)/rviz/urdf.rviz" required="true" />
+</launch>
