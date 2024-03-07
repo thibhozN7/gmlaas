@@ -7,7 +7,7 @@ current_dir = os.path.realpath(__file__)
 package_dir = os.path.dirname(os.path.dirname(current_dir))
 
 # Read CSV file into a pandas DataFrame
-df1 = pd.read_csv(f'{package_dir}/datasets/data/test_trajectory.csv', delimiter=';')
+df1 = pd.read_csv(f'{package_dir}/datasets/data/test_trajectory_data.csv', delimiter=';')
 
 # Read CSV file into pandas DataFrame
 df2 = pd.read_csv(f'{package_dir}/datasets/snapshots/simu/desired_frame_pose.csv', delimiter=';')

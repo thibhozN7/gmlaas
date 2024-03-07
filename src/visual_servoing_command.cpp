@@ -47,7 +47,7 @@ void VisualServoingCommand::init(){
         m_task.setLambda(vpAdaptiveGain());
         std::cout << "Adaptive Gain initialization" << std::endl;
     }else{
-        m_task.setLambda(0.3);
+        m_task.setLambda(0.4);
         std::cout << "Lambda gain initialization :" << m_lambda_gain << std::endl;
     }
 
@@ -75,7 +75,7 @@ void VisualServoingCommand::init(){
 
 }
 
-void VisualServoingCommand::computeCommandCallbackPbvs(const std_msgs::Float32MultiArray& msg){
+void VisualServoingCommand::computeCommandCallbackPbvs(const std_msgs::Float64MultiArray& msg){
     vpHomogeneousMatrix current_homo_matrix{msg.data[0], msg.data[1], msg.data[2], msg.data[3],
                                             msg.data[4], msg.data[5], msg.data[6], msg.data[7],
                                             msg.data[8], msg.data[9], msg.data[10], msg.data[11],
