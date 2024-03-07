@@ -7,6 +7,8 @@ import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.mplot3d import Axes3D
 from gmlaas.msg import PreHMsg
+
+
 import time
 import tf
 class EstimateHMatrix:
@@ -45,21 +47,29 @@ class EstimateHMatrix:
         H[:3, 3] = T
         return H
     
+    def convertDegree(self,R):
+        new_rotation= np.zeros((4,4))
+        new_rotation[:3,:3] = R_est
+        new_rotation[3,3] = 1
+        degree= tf.transformations.euler_from_matrix(new_rotation)
+        angle=np.degrees(degree) 
+        return angle
+    
     def publishMatrix(self,H):
         # Publish the current and desired coordinates as a PreHMsg message
         h_matrix_msg = Float32MultiArray()
         h_matrix_msg.data = H.flatten()
         self.m_h_matrix_pub.publish(h_matrix_msg)
 
+    def publishData(self,R_est,T_est):
+        msg_data=HData()
+        msg_data.T = T_est
+        msg_data.R = R_est.flatten()
+        msg_data.R_degree = self.convertDegree(R_est)
+    
     def callback(self,msg):
         self.buildInputMatrices(msg) 
         R_est, T_est = self.estimateRTMatrices()
-        new_rotation= np.zeros((4,4))
-        new_rotation[:3,:3] = R_est
-        new_rotation[3,3] = 1
-        # Convert the rotation matrix to euler angles
-        degree= tf.transformations.euler_from_matrix(new_rotation)
-        degree=np.degrees(degree) 
         H = self.buildHmatrix(R_est, T_est)  
         self.publishMatrix(H)      
     

@@ -3,10 +3,13 @@
 import rospy
 from gmlaas.msg import GraphBuilderMsg
 from apriltag_ros.msg import AprilTagDetectionArray
+from gazebo_msgs.msg import ModelState
 from message_filters import Subscriber, TimeSynchronizer
 import datetime as dt
 import os
 import time
+import csv
+import tf
 
 
 current_dir = os.path.realpath(__file__)
@@ -33,6 +36,9 @@ except KeyError as e:
 file1 = open(f"{package_dir}/datasets/snapshots/{env_csvfile}/{name_csvfile}_graph_dataset.csv", "w")
 file2 = open(f"{package_dir}/datasets/snapshots//{env_csvfile}/{name_csvfile}_tags_dataset.csv", "w")
 
+file3 = open(f"{package_dir}/datasets/data/{name_csvfile}_desired_pose.csv", "w")
+filewriter3 = csv.writer(file3, delimiter=';')
+
 
 datetime = dt.datetime.now()
 formatted_datetime = datetime.strftime("%Y-%m-%d %H:%M")
@@ -43,9 +49,12 @@ file2.write(f"<TITLE : Snapshot of {name_csvfile}: Tags Dataset (YYYY-MM-DD HH:M
 file1.write("timestamp sec, timpestamp nsecs, number_of_tags, adjacency_matrix, indexed_matrix\n") 
 file2.write("timestamp, timpestamp nsecs, tag_id, x, y, z\n")
 
+# Write title
+filewriter3.writerow(['time', 'x', 'y', 'z', 'roll', 'pitch', 'yaw'])
+
 success = False
 
-def callback(graph_data, tag_detections):
+def callback(graph_data, tag_detections,gaz_pose):
     timestamp_secs = graph_data.header.stamp.secs #int
     timestamp_nsecs = graph_data.header.stamp.nsecs #int
 
@@ -55,11 +64,16 @@ def callback(graph_data, tag_detections):
     # Write data to file1
     file1.write(f"{timestamp_secs}; {timestamp_nsecs}; {len(tag_detections.detections)}; {adjacency_matrix}; {indexed_matrix}\n")
 
-    # Process the received data as needed
-    print(f"Received synchronized data at timestamp : {timestamp_secs}.{timestamp_nsecs}")
-    print(timestamp_nsecs)
-    print("Adjacency Matrix:", adjacency_matrix)
-    print("Indexed Matrix:", indexed_matrix)   
+
+    #write data to file 3
+    pose_id = 1
+    x = gaz_sub.pose[pose_id].position.x
+    y = gaz_sub.pose[pose_id].position.y
+    z = gaz_sub.pose[pose_id].position.z
+    orientation = gaz_sub.pose[pose_id].orientation
+    roll, pitch, yaw = tf.euler_from_quaternion([orientation.x, orientation.y, orientation.z, orientation.w])
+    filewriter3.writerow([ x, y, z, roll, pitch, yaw])
+
 
     # Process tag detections as needed
     for detection in tag_detections.detections:
@@ -74,6 +88,7 @@ def callback(graph_data, tag_detections):
         
         file1.flush() 
         file2.flush() 
+        file3.flush()
         success = True
 
     if success:
@@ -94,6 +109,7 @@ if __name__ == "__main__":
     # Use message_filters to synchronize messages from both topics based on timestamps
     graph_sub = Subscriber("graph_building/data", GraphBuilderMsg)
     tag_sub = Subscriber("/tag_detections", AprilTagDetectionArray)
+    gaz_sub = Subscriber("/gazebo/model_states",ModelState)
 
     print("timer starts now")
     for c in range(5):
@@ -101,7 +117,7 @@ if __name__ == "__main__":
         time.sleep(1)
     print("timer ends now")
     
-    sync = TimeSynchronizer([graph_sub, tag_sub], queue_size=10)
+    sync = TimeSynchronizer([graph_sub, tag_sub,gaz_sub], queue_size=10)
     
     rospy.loginfo("Registering callback...")
     register_callback(sync, callback)

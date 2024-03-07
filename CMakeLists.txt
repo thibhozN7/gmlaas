@@ -21,6 +21,7 @@ add_message_files(
   PreHMsg.msg
   GraphMatcherMsg.msg
   PreHData.msg
+  HData.msg
 )
 generate_messages(
    DEPENDENCIES

@@ -18,12 +18,12 @@ package_dir = os.path.dirname(os.path.dirname(current_dir))
 # Open the ROS bag file
 bag = rosbag.Bag(f"{package_dir}/datasets/rosbags/my_bagfile.bag")
 
-# Open the first CSV file
+# Open CSV
 csvfile1 = open(f"{package_dir}/datasets/data/{args.param}_matching_data.csv", "w")
 filewriter1 = csv.writer(csvfile1, delimiter=';')
 filewriter1.writerow(['Time', 'Number of visible nodes', 'number of matched nodes', 'Score'])
 
-# Open the  CSV file
+# Open CSV
 csvfile3 = open(f"{package_dir}/datasets/data/{args.param}_trajectory.csv", "w")
 filewriter3 = csv.writer(csvfile3, delimiter=';')
 filewriter3.writerow(['time', 'x', 'y', 'z', 'roll', 'pitch', 'yaw'])
@@ -47,6 +47,7 @@ for topic, msg, t in bag.read_messages(topics=['/data/pre_h_computation','/gazeb
             orientation = msg.pose[pose_id].orientation
             roll, pitch, yaw = tf.euler_from_quaternion([orientation.x, orientation.y, orientation.z, orientation.w])
             filewriter3.writerow([time_sec, x, y, z, roll, pitch, yaw])
+        
     last_time_sec = time_sec
 # Close the CSV files and the ROS bag file
 print("Data written to CSV files.")
