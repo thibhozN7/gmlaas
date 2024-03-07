@@ -49,7 +49,7 @@ file2.write(f"<TITLE : Snapshot of {name_csvfile}: Tags Dataset (YYYY-MM-DD HH:M
 file1.write("timestamp sec, timpestamp nsecs, number_of_tags, adjacency_matrix, indexed_matrix\n") 
 file2.write("timestamp, timpestamp nsecs, tag_id, x, y, z\n")
 
-filewriter3.writerow(['x', 'y', 'z', 'roll', 'pitch', 'yaw'])
+filewriter3.writerow(['time','x', 'y', 'z', 'roll', 'pitch', 'yaw'])
 
 success = False
 
@@ -106,7 +106,7 @@ def gazeboCallback(gaz_model):
     z = gaz_model.pose[pose_id].position.z
     orientation = gaz_model.pose[pose_id].orientation
     roll, pitch, yaw = tf.euler_from_quaternion([orientation.x, orientation.y, orientation.z, orientation.w])
-    filewriter3.writerow([ x, y, z, roll, pitch, yaw])
+    filewriter3.writerow([0.0, x, y, z, roll, pitch, yaw])
     file3.flush()
 
     rospy.loginfo("gazeboCallback - data written to file 3")

@@ -8,10 +8,10 @@ import subprocess
 class ObjectMove:
     def __init__(self):
         
-        # rospy.get_param('~rosbag_value',rosbag)
-        # if rosbag == "save":
-        #     command = ['rosbag', 'record', '-O', 'my_bagfile.bag', '/data/pre_h_computation', '/gazebo/model_states']
-        #     process = subprocess.Popen(command)
+        rosbag = rospy.get_param('~rosbag_value', 'False')       
+        if rosbag == True:
+            command = ['rosbag', 'record', '-O', 'my_bagfile.bag', '/data/pre_h_computation', '/gazebo/model_states']
+            process = subprocess.Popen(command)
         
 
         rospy.init_node('object_move_py',anonymous=False)
