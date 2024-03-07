@@ -39,8 +39,8 @@ void VisualServoingCommand::init(){
                                     &VisualServoingCommand::computeCommandCallbackPbvs, this);
     
     // Fixed or dynamic gain used to adjust the control law in minimizing the error.
-    ros::param::get("adaptative_gain_value",  m_adaptative_gain);
-    ros::param::get("lamda_gain_value",  m_lambda_gain);
+    //ros::param::get("adaptative_gain_value",  m_adaptative_gain);
+    ros::param::get("visual_servoing_commande_node/lambda_gain_value",  m_lambda_gain);
 
 
     if(m_adaptative_gain){
