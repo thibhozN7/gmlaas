@@ -36,7 +36,7 @@ except KeyError as e:
 file1 = open(f"{package_dir}/datasets/snapshots/{env_csvfile}/{name_csvfile}_graph_dataset.csv", "w")
 file2 = open(f"{package_dir}/datasets/snapshots//{env_csvfile}/{name_csvfile}_tags_dataset.csv", "w")
 
-file3 = open(f"{package_dir}/datasets/data/{name_csvfile}_desired_pose.csv", "w")
+file3 = open(f"{package_dir}/datasets/data/{name_csvfile}_pose.csv", "w")
 filewriter3 = csv.writer(file3, delimiter=';')
 
 
