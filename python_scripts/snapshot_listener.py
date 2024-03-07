@@ -49,7 +49,6 @@ file2.write(f"<TITLE : Snapshot of {name_csvfile}: Tags Dataset (YYYY-MM-DD HH:M
 file1.write("timestamp sec, timpestamp nsecs, number_of_tags, adjacency_matrix, indexed_matrix\n") 
 file2.write("timestamp, timpestamp nsecs, tag_id, x, y, z\n")
 
-# Write title
 filewriter3.writerow(['time', 'x', 'y', 'z', 'roll', 'pitch', 'yaw'])
 
 success = False
@@ -66,16 +65,6 @@ def callback(graph_data, tag_detections,gaz_model):
     file1.write(f"{timestamp_secs}; {timestamp_nsecs}; {len(tag_detections.detections)}; {adjacency_matrix}; {indexed_matrix}\n")
 
 
-    #write data to file 3
-    pose_id = 1
-    x = gaz_model.pose[pose_id].position.x
-    y = gaz_model.pose[pose_id].position.y
-    z = gaz_model.pose[pose_id].position.z
-    orientation = gaz_model.pose[pose_id].orientation
-    roll, pitch, yaw = tf.euler_from_quaternion([orientation.x, orientation.y, orientation.z, orientation.w])
-    filewriter3.writerow([ x, y, z, roll, pitch, yaw])
-
-
     # Process tag detections as needed
     for detection in tag_detections.detections:
         tag_id = detection.id[0]
@@ -89,7 +78,6 @@ def callback(graph_data, tag_detections,gaz_model):
         
         file1.flush() 
         file2.flush() 
-        file3.flush()
         success = True
 
     if success:
@@ -102,6 +90,19 @@ def register_callback(sync, callback):
     except RuntimeError as e:
         rospy.loginfo(f"Error occurred during callback registration: {e}")
 
+def gazeboCallback(gaz_model):
+    print("Gazebo callback")
+     #write data to file 3
+    pose_id = 1
+    x = gaz_model.pose[pose_id].position.x
+    y = gaz_model.pose[pose_id].position.y
+    z = gaz_model.pose[pose_id].position.z
+    orientation = gaz_model.pose[pose_id].orientation
+    roll, pitch, yaw = tf.euler_from_quaternion([orientation.x, orientation.y, orientation.z, orientation.w])
+    filewriter3.writerow([ x, y, z, roll, pitch, yaw])
+    file3.flush()
+
+
 
 if __name__ == "__main__":
 
@@ -110,7 +111,7 @@ if __name__ == "__main__":
     # Use message_filters to synchronize messages from both topics based on timestamps
     graph_sub = Subscriber("graph_building/data", GraphBuilderMsg)
     tag_sub = Subscriber("/tag_detections", AprilTagDetectionArray)
-    gaz_sub = Subscriber("/gazebo/model_states",ModelStates)
+    gaz_sub = rospy.Subscriber("/gazebo/model_states",ModelStates, gazeboCallback)
 
     
     sync = TimeSynchronizer([graph_sub, tag_sub,gaz_sub], queue_size=30)
