@@ -9,7 +9,7 @@ import datetime as dt
 import os
 import time
 import csv
-import tf
+import tf.transformations as tf
 
 
 current_dir = os.path.realpath(__file__)
@@ -34,9 +34,9 @@ except KeyError as e:
 
 
 file1 = open(f"{package_dir}/datasets/snapshots/{env_csvfile}/{name_csvfile}_graph_dataset.csv", "w")
-file2 = open(f"{package_dir}/datasets/snapshots//{env_csvfile}/{name_csvfile}_tags_dataset.csv", "w")
+file2 = open(f"{package_dir}/datasets/snapshots/{env_csvfile}/{name_csvfile}_tags_dataset.csv", "w")
 
-file3 = open(f"{package_dir}/datasets/data/{name_csvfile}_pose.csv", "w")
+file3 = open(f"{package_dir}/datasets/snapshots/{env_csvfile}/{name_csvfile}_pose.csv", "w")
 filewriter3 = csv.writer(file3, delimiter=';')
 
 
@@ -49,11 +49,13 @@ file2.write(f"<TITLE : Snapshot of {name_csvfile}: Tags Dataset (YYYY-MM-DD HH:M
 file1.write("timestamp sec, timpestamp nsecs, number_of_tags, adjacency_matrix, indexed_matrix\n") 
 file2.write("timestamp, timpestamp nsecs, tag_id, x, y, z\n")
 
-filewriter3.writerow(['time', 'x', 'y', 'z', 'roll', 'pitch', 'yaw'])
+filewriter3.writerow(['x', 'y', 'z', 'roll', 'pitch', 'yaw'])
 
 success = False
 
-def callback(graph_data, tag_detections,gaz_model):
+def callback(graph_data, tag_detections):
+    global success
+
     print("begin callback..")
     timestamp_secs = graph_data.header.stamp.secs #int
     timestamp_nsecs = graph_data.header.stamp.nsecs #int
@@ -78,22 +80,27 @@ def callback(graph_data, tag_detections,gaz_model):
         
         file1.flush() 
         file2.flush() 
-        success = True
 
-    if success:
-        rospy.loginfo("Data successfully written to files.")
-        rospy.signal_shutdown("Data received and written to file.")
+    rospy.loginfo("Data successfully written to files 1 and 2.")
 
-def register_callback(sync, callback):
+    gaz_sub = rospy.Subscriber("/gazebo/model_states",ModelStates, gazeboCallback)
+
+    while (1):
+        rospy.loginfo("callback - waiting for gaezebo callback")
+
+def registerCallback(sync, callback):
     try:
         sync.registerCallback(callback)
     except RuntimeError as e:
         rospy.loginfo(f"Error occurred during callback registration: {e}")
 
 def gazeboCallback(gaz_model):
+    global success
+
     print("Gazebo callback")
      #write data to file 3
-    pose_id = 1
+    
+    pose_id = gaz_model.name.index("robot")
     x = gaz_model.pose[pose_id].position.x
     y = gaz_model.pose[pose_id].position.y
     z = gaz_model.pose[pose_id].position.z
@@ -102,22 +109,33 @@ def gazeboCallback(gaz_model):
     filewriter3.writerow([ x, y, z, roll, pitch, yaw])
     file3.flush()
 
+    rospy.loginfo("gazeboCallback - data written to file 3")
+    rospy.loginfo("ready for shutdown")
 
+    rospy.signal_shutdown("BITCH")        
 
 if __name__ == "__main__":
 
     rospy.init_node("snapshot_listener", anonymous=False)
 
+
+
     # Use message_filters to synchronize messages from both topics based on timestamps
     graph_sub = Subscriber("graph_building/data", GraphBuilderMsg)
     tag_sub = Subscriber("/tag_detections", AprilTagDetectionArray)
-    gaz_sub = rospy.Subscriber("/gazebo/model_states",ModelStates, gazeboCallback)
+
+    print("CHEEESE")
+    for c in range(3):
+        print(3-c)
+        time.sleep(1)
+    print("PHOTO!!!!!")
+   
+    sync = TimeSynchronizer([graph_sub, tag_sub], queue_size=10)
+    
 
     
-    sync = TimeSynchronizer([graph_sub, tag_sub,gaz_sub], queue_size=30)
-    
     rospy.loginfo("Registering callback...")
-    register_callback(sync, callback)
+    registerCallback(sync, callback)
     rospy.spin()
 
 
