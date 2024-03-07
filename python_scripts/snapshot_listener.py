@@ -3,7 +3,7 @@
 import rospy
 from gmlaas.msg import GraphBuilderMsg
 from apriltag_ros.msg import AprilTagDetectionArray
-from gazebo_msgs.msg import ModelState
+from gazebo_msgs.msg import ModelStates
 from message_filters import Subscriber, TimeSynchronizer
 import datetime as dt
 import os
@@ -54,7 +54,8 @@ filewriter3.writerow(['time', 'x', 'y', 'z', 'roll', 'pitch', 'yaw'])
 
 success = False
 
-def callback(graph_data, tag_detections,gaz_pose):
+def callback(graph_data, tag_detections,gaz_model):
+    print("begin callback..")
     timestamp_secs = graph_data.header.stamp.secs #int
     timestamp_nsecs = graph_data.header.stamp.nsecs #int
 
@@ -67,10 +68,10 @@ def callback(graph_data, tag_detections,gaz_pose):
 
     #write data to file 3
     pose_id = 1
-    x = gaz_sub.pose[pose_id].position.x
-    y = gaz_sub.pose[pose_id].position.y
-    z = gaz_sub.pose[pose_id].position.z
-    orientation = gaz_sub.pose[pose_id].orientation
+    x = gaz_model.pose[pose_id].position.x
+    y = gaz_model.pose[pose_id].position.y
+    z = gaz_model.pose[pose_id].position.z
+    orientation = gaz_model.pose[pose_id].orientation
     roll, pitch, yaw = tf.euler_from_quaternion([orientation.x, orientation.y, orientation.z, orientation.w])
     filewriter3.writerow([ x, y, z, roll, pitch, yaw])
 
@@ -109,15 +110,10 @@ if __name__ == "__main__":
     # Use message_filters to synchronize messages from both topics based on timestamps
     graph_sub = Subscriber("graph_building/data", GraphBuilderMsg)
     tag_sub = Subscriber("/tag_detections", AprilTagDetectionArray)
-    gaz_sub = Subscriber("/gazebo/model_states",ModelState)
+    gaz_sub = Subscriber("/gazebo/model_states",ModelStates)
 
-    print("timer starts now")
-    for c in range(5):
-        print(5-c)
-        time.sleep(1)
-    print("timer ends now")
     
-    sync = TimeSynchronizer([graph_sub, tag_sub,gaz_sub], queue_size=10)
+    sync = TimeSynchronizer([graph_sub, tag_sub,gaz_sub], queue_size=30)
     
     rospy.loginfo("Registering callback...")
     register_callback(sync, callback)

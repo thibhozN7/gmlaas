@@ -47,11 +47,11 @@ void VisualServoingCommand::init(){
         m_task.setLambda(vpAdaptiveGain());
         std::cout << "Adaptive Gain initialization" << std::endl;
     }else{
-        m_task.setLambda(1);
+        m_task.setLambda(0.3);
         std::cout << "Lambda gain initialization :" << m_lambda_gain << std::endl;
     }
 
-    threshold_distance = 0.1; //10 centimeters
+    threshold_distance = 0.02; //10 centimeters
     threshold_orientation = 5; //5 degres 
     
     this-> desired_diff = {threshold_distance, threshold_orientation};
