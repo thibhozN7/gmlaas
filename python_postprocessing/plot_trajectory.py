@@ -7,21 +7,24 @@ current_dir = os.path.realpath(__file__)
 package_dir = os.path.dirname(os.path.dirname(current_dir))
 
 # Read CSV file into a pandas DataFrame
-df = pd.read_csv(f'{package_dir}/datasets/data/test_trajectory.csv', delimiter=';')
+df1 = pd.read_csv(f'{package_dir}/datasets/data/test_trajectory.csv', delimiter=';')
 
-def find_range(df):
-    min_x = df['x'].min()
-    max_x = df['x'].max()
+# Read CSV file into pandas DataFrame
+df2 = pd.read_csv(f'{package_dir}/datasets/snapshots/simu/desired_frame_pose.csv', delimiter=';')
+
+def find_range(df1):
+    min_x = df1['x'].min()
+    max_x = df1['x'].max()
     diff_x = abs(max_x - min_x)
     mid_x = (max_x + min_x)/2
 
-    min_y = df['y'].min()
-    max_y = df['y'].max()
+    min_y = df1['y'].min()
+    max_y = df1['y'].max()
     diff_y = abs(max_y - min_y)
     mid_y = (max_y + min_y)/2
 
-    min_z = df['z'].min()
-    max_z = df['z'].max()
+    min_z = df1['z'].min()
+    max_z = df1['z'].max()
     diff_z = abs(max_z - min_z)
     mid_z = (max_z + min_z)/2
 
@@ -39,13 +42,18 @@ def find_range(df):
 fig = plt.figure(figsize=(10, 8))
 ax = fig.add_subplot(111, projection='3d')
 
-ax.plot(df['x'].values, df['y'].values, df['z'].values, label='Trajectory')
+# Plot the trajectory
+ax.plot(df1['x'].values, df1['y'].values, df1['z'].values, label='Trajectory')
+
+# Plot the desired position as a red point
+ax.scatter(df2['x'], df2['y'], df2['z'], c='red', marker='o', label='Desired Position')
+
 ax.set_xlabel('X')
 ax.set_ylabel('Y')
 ax.set_zlabel('Z')
 ax.set_title('Object Trajectory in 3D Space')
 
-x_range, y_range, z_range = find_range(df)
+x_range, y_range, z_range = find_range(df1)
 
 # Manually set equal aspect ratio for all axes
 ax.set_xlim(x_range)
