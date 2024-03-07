@@ -2,7 +2,7 @@
 import rospy
 import numpy as np
 import matplotlib.pyplot as plt
-from std_msgs.msg import Float32MultiArray, MultiArrayDimension
+from std_msgs.msg import Float64MultiArray, MultiArrayDimension
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.mplot3d import Axes3D
@@ -13,7 +13,7 @@ class EstimateHMatrix:
     def __init__(self) :
         rospy.init_node("h_computation_py",anonymous=False)
         self.m_points_sub = rospy.Subscriber("/h_computation/input_matrices",PreHMsg,self.callback)
-        self.m_h_matrix_pub = rospy.Publisher("/h_computation/h_matrix",Float32MultiArray,queue_size=10)
+        self.m_h_matrix_pub = rospy.Publisher("/h_computation/h_matrix",Float64MultiArray,queue_size=10)
         
 
     def buildInputMatrices(self,msg):
@@ -47,7 +47,7 @@ class EstimateHMatrix:
     
     def publishMatrix(self,H):
         # Publish the current and desired coordinates as a PreHMsg message
-        h_matrix_msg = Float32MultiArray()
+        h_matrix_msg = Float64MultiArray()
         h_matrix_msg.data = H.flatten()
         self.m_h_matrix_pub.publish(h_matrix_msg)
 
