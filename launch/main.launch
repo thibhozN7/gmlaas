@@ -3,39 +3,52 @@
 <param name="/use_sim_time" value="true" />
 
 <arg name="simu" default="true"/> 
-<param name="simu_value" value="$(arg simu)"/>
 
 <arg name="adaptative_gain" default="false"/>
-<param name="adaptative_gain_value" value="$(arg adaptative_gain)"/>
-
-<arg name="lambda_gain" default="1"/>
-<param name="lambda_gain_value" value="$(arg lambda_gain)"/>
 
 <arg name="vs" default="pbvs"/>
-<param name="vs_type" value="$(arg vs)" type="string"/>
 
 <arg name="x_gain" default="1"/>
-<param name="x_gain_value" value="$(arg x_gain)"/>
 
 <arg name="y_gain" default="1"/>
-<param name="y_gain_value" value="$(arg y_gain)"/>
 
 <arg name="z_gain" default="1"/>
-<param name="z_gain_value" value="$(arg z_gain)"/>
 
 <arg name="rx_gain" default="1"/>
-<param name="rx_gain_value" value="$(arg rx_gain)"/>
 
 <arg name="ry_gain" default="1"/>
-<param name="ry_gain_value" value="$(arg ry_gain)"/>
+
 
 <arg name="rz_gain" default="1"/>
 <param name="rz_gain_value" value="$(arg rz_gain)"/>
 
-<node name="apriltag_to_graph_py" pkg="gmlaas" type="apriltag_to_graph.py" output="screen"/>
-<node name="graph_matcher_py" pkg="gmlaas" type="graph_matcher.py" output="screen"/>
-<node name="pre_h_computation_py" pkg="gmlaas" type="pre_h_computation.py" output="screen"/>
+<arg name="lambda_gain" default="0.4"/>
+
+<node name="apriltag_to_graph_py" pkg="gmlaas" type="apriltag_to_graph.py" output="screen">
+<param name="simu_value" value="$(arg simu)"/>
+</node>
+<node name="graph_matcher_py" pkg="gmlaas" type="graph_matcher.py" output="screen">
+<param name="simu_value" value="$(arg simu)"/>
+</node>
+
+<node name="pre_h_computation_py" pkg="gmlaas" type="pre_h_computation.py" output="screen">
+<param name="simu_value" value="$(arg simu)"/>
+</node>
+
 <node name="h_computation_py" pkg="gmlaas" type="h_computation.py" output="screen"/>
-<node pkg="gmlaas" name="visual_servoing_command_node" type="visual_servoing_command_node" output="screen"/>
+
+<node pkg="gmlaas" name="visual_servoing_command_node" type="visual_servoing_command_node" output="screen">
+ <param name="vs_type" value="$(arg vs)" type="string"/>
+ <param name="lambda_gain_value" value="$(arg lambda_gain)"/>
+ <param name="rz_gain_value" value="$(arg rz_gain)"/>
+ <param name="ry_gain_value" value="$(arg ry_gain)"/>
+ <param name="rx_gain_value" value="$(arg rx_gain)"/>
+ <param name="z_gain_value" value="$(arg z_gain)"/>
+ <param name="y_gain_value" value="$(arg y_gain)"/>
+ <param name="x_gain_value" value="$(arg x_gain)"/>
+</node>
+
+
+
 
 </launch>

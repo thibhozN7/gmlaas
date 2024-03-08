@@ -18,7 +18,7 @@ class GraphMatcher:
         self.m_graph_matcher_data_pub = rospy.Publisher("/graph_matching/data",GraphMatcherMsg, queue_size=10)
   
         # Initialize variables
-        simu=rospy.get_param('~simu_value', True)
+        simu=rospy.get_param('/graph_matcher_py/simu_value', True)
         if simu : 
             self.simu = "simu"
         else :
