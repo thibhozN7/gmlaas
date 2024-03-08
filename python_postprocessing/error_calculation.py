@@ -90,6 +90,7 @@ axs[0].set_xlabel('Time')
 axs[0].set_ylabel('Error in X (-e = s*-s)')
 axs[0].set_title('Error in X over Time')
 axs[0].set_ylim(x_range)
+axs[0].grid()
 
 # Plot error in y
 axs[1].plot(df1['time'].values, df1['error_y'].values, label='Error in Y', color='g')
@@ -97,6 +98,7 @@ axs[1].set_xlabel('Time')
 axs[1].set_ylabel('Error in Y (-e = s*-s)')
 axs[1].set_title('Error in Y over Time')
 axs[1].set_ylim(y_range)
+axs[1].grid()
 
 # Plot error in z
 axs[2].plot(df1['time'].values, df1['error_z'].values, label='Error in Z', color='b')
@@ -104,9 +106,11 @@ axs[2].set_xlabel('Time')
 axs[2].set_ylabel('Error in Z (-e = s*-s)')
 axs[2].set_title('Error in Z over Time')
 axs[2].set_ylim(z_range)
+axs[2].grid()
 
 # Adjust layout to prevent clipping of labels
 plt.tight_layout()
+
 
 # Create a 1x3 subplot grid
 fig, axs = plt.subplots(1, 3, figsize=(15, 5))
@@ -117,13 +121,14 @@ axs[0].set_xlabel('Time')
 axs[0].set_ylabel('Error in Roll (deg)')
 axs[0].set_title('Error in Roll over Time')
 axs[0].set_ylim(range_roll)
-
+axs[0].grid()
 # Plot error in pitch
 axs[1].plot(df1['time'].values, df1['error_pitch'].values, label='Error in Pitch', color='g')
 axs[1].set_xlabel('Time')
 axs[1].set_ylabel('Error in Pitch (deg)')
 axs[1].set_title('Error in Pitch over Time')
 axs[1].set_ylim(range_pitch)
+axs[1].grid()
 
 # Plot error in yaw
 axs[2].plot(df1['time'].values, df1['error_yaw'].values, label='Error in Yaw', color='b')
@@ -131,10 +136,11 @@ axs[2].set_xlabel('Time')
 axs[2].set_ylabel('Error in Yaw (deg)')
 axs[2].set_title('Error in Yaw over Time')
 axs[2].set_ylim(range_yaw)
+axs[2].grid()
 
 # Adjust layout to prevent clipping of labels
 plt.tight_layout()
 
-# Show the plot
+# Show the plot 
 plt.show()
 

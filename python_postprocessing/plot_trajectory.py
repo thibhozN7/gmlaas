@@ -64,6 +64,7 @@ x_range, y_range, z_range = find_range(df1)
 ax.set_xlim(x_range)
 ax.set_ylim(y_range)
 ax.set_zlim(z_range)
+ax.grid(True)
 
 plt.legend()
 plt.show()
