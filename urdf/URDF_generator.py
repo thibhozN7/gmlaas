@@ -47,6 +47,13 @@ class URDFGenerator:
             scaling_y += 0.03
             scaling_z += 0.04
 
+        mean=(max(self.stick_length.values())+min(self.stick_length.values()))/2
+        for i in range(1,len(self.stick_length)+1):
+            if self.stick_length[i]>mean:
+                self.stick_length[i]=self.stick_length[i]*0.8
+            else:
+                self.stick_length[i]=self.stick_length[i]*0.6
+
         # Generating sticks
         for i in range(1, self.num_cubes):
             parent_id = (i - 1) // 2
@@ -96,7 +103,7 @@ class URDFGenerator:
         roll = atan2(-axis_z[1], axis_z[2])
         pitch = asin(axis_z[0])
         yaw = 0
-        return midpoint, [roll, pitch, yaw], sqrt(pow(point[0],2)+pow(point[1],2)+pow(point[2],2))*0.8
+        return midpoint, [roll, pitch, yaw], sqrt(pow(point[0],2)+pow(point[1],2)+pow(point[2],2))
 
 
 if __name__ == "__main__":

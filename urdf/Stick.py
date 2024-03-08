@@ -10,7 +10,7 @@ class Stick:
     def create_stick_color(self):
         stick_color = ET.Element("gazebo", reference=f"stick_link_{self.id}")
         material = ET.SubElement(stick_color, "material")
-        material.text = "Gazebo/Blue"
+        material.text = "Gazebo/Red"
         return stick_color
 
     def create_link_element(self):
