@@ -3,15 +3,21 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import os
 import numpy as np
+import argparse
 
 current_dir = os.path.realpath(__file__)
 package_dir = os.path.dirname(os.path.dirname(current_dir))
 
+# Parse command line arguments 'param'
+parser = argparse.ArgumentParser(description='Process some integers.')
+parser.add_argument('param', type=str, help='parameter for file names')
+args = parser.parse_args()
+
 # Read CSV file into a pandas DataFrame
-df1 = pd.read_csv(f'{package_dir}/datasets/data/test_trajectory_data.csv', delimiter=';')
+df1 = pd.read_csv(f'{package_dir}/datasets/data/{args.param}_trajectory_data.csv', delimiter=';')
 
 # Read CSV file into pandas DataFrame
-df2 = pd.read_csv(f'{package_dir}/datasets/snapshots/simu/desired_frame_pose.csv', delimiter=';')
+df2 = pd.read_csv(f'{package_dir}/datasets/data/{args.param}_desired_frame_pose.csv', delimiter=';')
 
 # Extract desired x, y, and z values from df2
 desired_x = df2['x'].iloc[0]

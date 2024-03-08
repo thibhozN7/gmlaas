@@ -1,9 +1,12 @@
 <launch>
 
 <arg name="rosbag" default="False"/> 
+<arg name="file" default="unnamed"/> 
+
 
 <node name="object_move_py" pkg="gmlaas" type="object_move.py" output="screen">
     <param name="rosbag_value" value="$(arg rosbag)"/>
+    <param name="file_value" value="$(arg file)"/>
 </node>
 
 </launch>

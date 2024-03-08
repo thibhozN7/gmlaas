@@ -1,12 +1,18 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import os
+import argparse
 
 current_dir = os.path.realpath(__file__)
 package_dir = os.path.dirname(os.path.dirname(current_dir))
 
+# Parse command line arguments 'param'
+parser = argparse.ArgumentParser(description='Process some integers.')
+parser.add_argument('param', type=str, help='parameter for file names')
+args = parser.parse_args()
+
 # Read CSV file into a pandas DataFrame
-df = pd.read_csv(f'{package_dir}/datasets/data/test_matching_data.csv', delimiter=';')
+df = pd.read_csv(f'{package_dir}/datasets/data/{args.param}_matching_data.csv', delimiter=';')
 
 # Convert the 'Time' column to datetime format
 df['Time'] = pd.to_datetime(df['Time'], unit='s')

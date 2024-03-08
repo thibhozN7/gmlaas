@@ -15,7 +15,7 @@ package_dir = os.path.dirname(os.path.dirname(current_dir))
 
 
 # Open the ROS bag file
-bag = rosbag.Bag(f"{package_dir}/datasets/rosbags/my_bagfile.bag")
+bag = rosbag.Bag(f"{package_dir}/datasets/rosbags/{args.param}_bag.bag")
 
 # Open CSV
 csvfile1 = open(f"{package_dir}/datasets/data/{args.param}_matching_data.csv", "w")

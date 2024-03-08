@@ -19,14 +19,16 @@ try :
     rospy.loginfo("Trying to get the name_arg parameter from the launch file...")
     env_csvfile = rospy.get_param('~env_arg')
     name_csvfile = rospy.get_param('~name_arg')
+    type_csvfile = rospy.get_param('~type_arg')
 except KeyError as e:
     rospy.loginfo("Trying to get the name_arg parameter from the rosrun command line...")
     argv = rospy.myargv()[1:]
     print(argv)
     print(len(argv))
-    if len(argv) == 2:
+    if len(argv) == 3:
         env_csvfile = argv[0]
         name_csvfile = argv[1]
+        type_csvfile = argv[2]
     else :
         rospy.loginfo("... Please set the name_arg parameter in running the launch file : roslaunch gmlaas snapshot_listener.launch nam_arg:=\"csvNameFile\"") 
         rospy.loginfo("or in running the rosrun command line : rosrun gmlaas snapshot_listener.py csvNameFile")
@@ -36,7 +38,7 @@ except KeyError as e:
 file1 = open(f"{package_dir}/datasets/snapshots/{env_csvfile}/{name_csvfile}_graph_dataset.csv", "w")
 file2 = open(f"{package_dir}/datasets/snapshots/{env_csvfile}/{name_csvfile}_tags_dataset.csv", "w")
 
-file3 = open(f"{package_dir}/datasets/snapshots/{env_csvfile}/{name_csvfile}_pose.csv", "w")
+file3 = open(f"{package_dir}/datasets/data/{type_csvfile}_{name_csvfile}_pose.csv", "w")
 filewriter3 = csv.writer(file3, delimiter=';')
 
 
