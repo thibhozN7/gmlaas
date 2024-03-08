@@ -29,7 +29,7 @@ class PreHMatrix:
         self.m_data_pub = rospy.Publisher('/data/pre_h_computation', PreHData, queue_size=10)
 
         # Initialize variables
-        simu=rospy.get_param('~simu_value', True)
+        simu=rospy.get_param('/pre_h_computation_py/simu_value', True)
         if simu : 
             self.simu = "simu"
         else :

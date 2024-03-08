@@ -12,7 +12,7 @@ class AprilTagToGraph:
     def __init__(self):
         # Define the connections between the nodes, [parent, child] 
         
-        simu=rospy.get_param('~simu_value', True)        
+        simu=rospy.get_param('/apriltag_to_graph_py/simu_value', True)        
         if simu == True:
                     self.m_connections =[[0, 1],
                    [0, 2],

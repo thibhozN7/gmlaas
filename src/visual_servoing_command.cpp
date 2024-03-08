@@ -40,14 +40,16 @@ void VisualServoingCommand::init(){
     
     // Fixed or dynamic gain used to adjust the control law in minimizing the error.
     //ros::param::get("adaptative_gain_value",  m_adaptative_gain);
-    ros::param::get("visual_servoing_commande_node/lambda_gain_value",  m_lambda_gain);
+    
+    
+    ros::param::get("/visual_servoing_command_node/lambda_gain_value",  m_lambda_gain);
 
 
     if(m_adaptative_gain){
         m_task.setLambda(vpAdaptiveGain());
         std::cout << "Adaptive Gain initialization" << std::endl;
     }else{
-        m_task.setLambda(0.4);
+        m_task.setLambda(m_lambda_gain);
         std::cout << "Lambda gain initialization :" << m_lambda_gain << std::endl;
     }
 
@@ -66,12 +68,12 @@ void VisualServoingCommand::init(){
     m_vel_twist_stamped.twist.angular.y = 0;
     m_vel_twist_stamped.twist.angular.z = 0;
 
-    ros::param::get("x_gain_value",  m_x_gain);
-    ros::param::get("y_gain_value",  m_y_gain);
-    ros::param::get("z_gain_value",  m_z_gain);
-    ros::param::get("rx_gain_value",  m_rx_gain);
-    ros::param::get("ry_gain_value",  m_ry_gain);
-    ros::param::get("rz_gain_value",  m_rz_gain);
+    ros::param::get("/visual_servoing_command_node/x_gain_value",  m_x_gain);
+    ros::param::get("/visual_servoing_command_node/y_gain_value",  m_y_gain);
+    ros::param::get("/visual_servoing_command_node/z_gain_value",  m_z_gain);
+    ros::param::get("/visual_servoing_command_node/rx_gain_value",  m_rx_gain);
+    ros::param::get("/visual_servoing_command_node/ry_gain_value",  m_ry_gain);
+    ros::param::get("/visual_servoing_command_node/rz_gain_value",  m_rz_gain);
 
 }
 
