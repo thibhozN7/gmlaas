@@ -8,7 +8,7 @@
   <arg name="debug" default="false"/>
 
   <arg name="robot_model" default="$(find realsense2_description)/urdf/test_d435_camera.urdf.xacro"/>
-  <arg name="tree_urdf_filename" default="tree.urdf"/>
+  <arg name="tree_urdf_filename" default="tree_with_branches.urdf"/>
 
   
 
@@ -34,5 +34,5 @@
 
   <!-- push tree_description to factory and spawn tree model in gazebo -->
   <node name="urdf_spawner_tree" pkg="gazebo_ros" type="spawn_model"
-        args="-x 2.686933 -y -0.254398 -z 1.685180 -Y -1.546215 -unpause -urdf -model target_tree -param tree_description" respawn="false" output="screen" />
+        args="-x 2.688312 -y -0.394513 -z 1.586757 -Y 1.580662 -unpause -urdf -model target_tree -param tree_description" respawn="false" output="screen" />
 </launch>
