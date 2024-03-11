@@ -53,9 +53,15 @@ ax.plot(df1['x'].values, df1['y'].values, df1['z'].values, label='Trajectory')
 # Plot the desired position as a red point
 ax.scatter(df2['x'], df2['y'], df2['z'], c='red', marker='o', label='Desired Position')
 
-ax.set_xlabel('X')
-ax.set_ylabel('Y')
-ax.set_zlabel('Z')
+# Plot the initial position  as a black cross
+ax.scatter(df1['x'].iloc[0], df1['y'].iloc[0], df1['z'].iloc[0], c='black', marker='x', label='Initial Position')
+
+# Plot the final position as a blue cross
+ax.scatter(df1['x'].iloc[-1], df1['y'].iloc[-1], df1['z'].iloc[-1], c='black', marker='o', label='Final Position')
+
+ax.set_xlabel('X (m)')
+ax.set_ylabel('Y (m)')
+ax.set_zlabel('Z (m)')
 ax.set_title('Object Trajectory in 3D Space')
 
 x_range, y_range, z_range = find_range(df1)
